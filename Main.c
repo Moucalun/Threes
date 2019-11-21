@@ -337,12 +337,11 @@ void pressedRight(int jogo[][7], int* nextValue, int* score) {
 		}
 	}
 }
-// Função que imprime no console a matriz, o score, e o próximo valor a ser
-// inserido
+// Função que imprime no console a matriz, o score, e o próximo valor a ser inserido
 void printm(int jogo[][7], int score, int nextValue) {
 	int i, j;
 	for (i = 0; i < 7; ++i) {
-		for (j = 0; j < 7; j++) {
+		for (j = 0; j < 7; ++j) {
 			if (jogo[i][j] == -1) {
 				printf(" X ");
 			}
@@ -390,8 +389,7 @@ void getPlayer(char* p_player) {
 	printf("Bora pro jogo, %s", p_player);
 }
 // Função que retorna uma allegro color
-ALLEGRO_COLOR
-color(char* color) {
+ALLEGRO_COLOR color(char* color) {
 	if (color == "Black") {
 		return al_map_rgb(0, 0, 0);
 	}
@@ -425,11 +423,52 @@ void printt(int* gameTime) {
 
 	printf("Tempo de jogo:\n%02d:%02d:%02d\n", hrs, min, sec);
 
-	al_draw_filled_rectangle(84, 79, 288, 101, color("Light Blue"));
+	al_draw_filled_rectangle(84, 79, 273, 101, color("Light Blue"));
 	al_draw_textf(font, color("Cream White"), 183.0, 82, ALLEGRO_ALIGN_CENTRE,
 		"%02d:%02d:%02d", hrs, min, sec);
 	al_flip_display();
 	al_destroy_font(font);
+}
+// Função que imprime a matriz no jogo
+void allegro_printm(int jogo[][7], int nextValue) {
+	ALLEGRO_FONT* font = al_load_font("assets/ttf/Arcade_Alternate.ttf", 18, 0);//don't forget to destroy all this
+	ALLEGRO_BITMAP* one = al_load_bitmap("assets/bmp/one.bmp");
+	ALLEGRO_BITMAP* two = al_load_bitmap("assets/bmp/two.bmp");
+	ALLEGRO_BITMAP* threes = al_load_bitmap("assets/bmp/threes.bmp");
+	ALLEGRO_BITMAP* barrier = al_load_bitmap("assets/bmp/barrier.bmp");
+	ALLEGRO_BITMAP* matrix = al_load_bitmap("assets/bmp/matrix.bmp");
+
+	float xI = 37.0;
+	float yI = 131.0;
+	al_draw_bitmap(matrix, xI, yI, 0);
+	for (int i = 1; i < 6; ++i) {
+		for (int j = 1; j < 6; ++j) {
+			if (jogo[i][j] == 1) {
+				float x = (xI + (50.0 * j) - 50.0);
+				float y = (yI + (50.0 * i) - 50.0);
+				al_draw_bitmap(one, x, y, 0);
+				//al_draw_text(font, color("Cream White"), x, y, ALLEGRO_ALIGN_CENTRE, "1");
+			}
+			else if (jogo[i][j] == 2) {
+				float x = (xI + (50.0 * j) - 50.0);
+				float y = (yI + (50.0 * i) - 50.0);
+				al_draw_bitmap(two, x, y, 0);
+				//al_draw_text(font, color("Cream White"), x, y, ALLEGRO_ALIGN_CENTRE, "2");
+			}
+			else if (jogo[i][j] == -1) {
+				float x = (xI + (50.0 * j) - 50.0);
+				float y = (yI + (50.0 * i) - 50.0);
+				al_draw_bitmap(barrier, x, y, 0);
+			}
+			else if (jogo[i][j] != 0) {
+				float x = (xI + (50.0 * j) - 50.0);
+				float y = (yI + (50.0 * i) - 50.0);
+				al_draw_bitmap(threes, x, y, 0);
+				//al_draw_textf(font, color("Cream White"), x, y, ALLEGRO_ALIGN_CENTRE, "%d", jogo[i][j]);
+			}
+		}
+	}
+	al_flip_display();
 }
 // Função que sei lá
 void gameover() { printf("\ncabou\n"); }
@@ -447,6 +486,7 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, ALLEGRO_BITMAP* mainMenu) {
 	prints(score);
 
 	printm(jogo, score, nextValue);
+	allegro_printm(jogo, nextValue);
 
 	ALLEGRO_EVENT_QUEUE* gameQueue = al_create_event_queue();
 	al_register_event_source(gameQueue, al_get_display_event_source(gameWindow));
@@ -464,24 +504,28 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, ALLEGRO_BITMAP* mainMenu) {
 			case ALLEGRO_KEY_UP:
 				pressedUp(jogo, &nextValue, &score);
 				printm(jogo, score, nextValue);
+				allegro_printm(jogo, nextValue);
 				prints(score);
 				if (!canContinue(jogo)) gameover();
 				break;
 			case ALLEGRO_KEY_DOWN:
 				pressedDown(jogo, &nextValue, &score);
 				printm(jogo, score, nextValue);
+				allegro_printm(jogo, nextValue);
 				prints(score);
 				if (!canContinue(jogo)) gameover();
 				break;
 			case ALLEGRO_KEY_LEFT:
 				pressedLeft(jogo, &nextValue, &score);
 				printm(jogo, score, nextValue);
+				allegro_printm(jogo, nextValue);
 				prints(score);
 				if (!canContinue(jogo)) gameover();
 				break;
 			case ALLEGRO_KEY_RIGHT:
 				pressedRight(jogo, &nextValue, &score);
 				printm(jogo, score, nextValue);
+				allegro_printm(jogo, nextValue);
 				prints(score);
 				if (!canContinue(jogo)) gameover();
 				break;
@@ -489,7 +533,7 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, ALLEGRO_BITMAP* mainMenu) {
 		}
 
 		if (gameEvent.type == ALLEGRO_EVENT_TIMER) {
-			printt(&gameTime);
+			//printt(&gameTime);
 		}
 	}
 }
