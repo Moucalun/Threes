@@ -337,7 +337,8 @@ void pressedRight(int jogo[][7], int* nextValue, int* score) {
 		}
 	}
 }
-// Função que imprime no console a matriz, o score, e o próximo valor a ser inserido
+// Função que imprime no console a matriz, o score, e o próximo valor a ser
+// inserido
 void printm(int jogo[][7], int score, int nextValue) {
 	int i, j;
 	for (i = 0; i < 7; ++i) {
@@ -399,6 +400,9 @@ ALLEGRO_COLOR color(char* color) {
 	else if (color == "Light Blue") {
 		return al_map_rgb(64, 191, 193);
 	}
+	else if (color == "Red") {
+		return al_map_rgb(240, 19, 77);
+	}
 	else {
 		return al_map_rgb(255, 255, 255);
 	}
@@ -421,7 +425,7 @@ void printt(int* gameTime) {
 	int min = *gameTime / 60;
 	int hrs = *gameTime / 3600;
 
-	printf("Tempo de jogo:\n%02d:%02d:%02d\n", hrs, min, sec);
+	//printf("Tempo de jogo:\n%02d:%02d:%02d\n", hrs, min, sec);
 
 	al_draw_filled_rectangle(84, 79, 273, 101, color("Light Blue"));
 	al_draw_textf(font, color("Cream White"), 183.0, 82, ALLEGRO_ALIGN_CENTRE,
@@ -431,7 +435,11 @@ void printt(int* gameTime) {
 }
 // Função que imprime a matriz no jogo
 void allegro_printm(int jogo[][7], int nextValue) {
-	ALLEGRO_FONT* font = al_load_font("assets/ttf/Arcade_Alternate.ttf", 18, 0);//don't forget to destroy all this
+	ALLEGRO_FONT* font = al_load_font("assets/ttf/Arcade_Alternate.ttf", 35,
+		0);  // don't forget to destroy all this
+	ALLEGRO_FONT* font2 = al_load_font("assets/ttf/Arcade_Alternate.ttf", 25, 0);
+	ALLEGRO_FONT* font3 = al_load_font("assets/ttf/Arcade_Alternate.ttf", 18, 0);
+	ALLEGRO_FONT* font4 = al_load_font("assets/ttf/Arcade_Alternate.ttf", 14, 0);
 	ALLEGRO_BITMAP* one = al_load_bitmap("assets/bmp/one.bmp");
 	ALLEGRO_BITMAP* two = al_load_bitmap("assets/bmp/two.bmp");
 	ALLEGRO_BITMAP* threes = al_load_bitmap("assets/bmp/threes.bmp");
@@ -447,13 +455,15 @@ void allegro_printm(int jogo[][7], int nextValue) {
 				float x = (xI + (50.0 * j) - 50.0);
 				float y = (yI + (50.0 * i) - 50.0);
 				al_draw_bitmap(one, x, y, 0);
-				//al_draw_text(font, color("Cream White"), x, y, ALLEGRO_ALIGN_CENTRE, "1");
+				al_draw_text(font, color("Cream White"), x + 27, y + 10,
+					ALLEGRO_ALIGN_CENTRE, "1");
 			}
 			else if (jogo[i][j] == 2) {
 				float x = (xI + (50.0 * j) - 50.0);
 				float y = (yI + (50.0 * i) - 50.0);
 				al_draw_bitmap(two, x, y, 0);
-				//al_draw_text(font, color("Cream White"), x, y, ALLEGRO_ALIGN_CENTRE, "2");
+				al_draw_text(font, color("Cream White"), x + 27, y + 10,
+					ALLEGRO_ALIGN_CENTRE, "2");
 			}
 			else if (jogo[i][j] == -1) {
 				float x = (xI + (50.0 * j) - 50.0);
@@ -464,14 +474,47 @@ void allegro_printm(int jogo[][7], int nextValue) {
 				float x = (xI + (50.0 * j) - 50.0);
 				float y = (yI + (50.0 * i) - 50.0);
 				al_draw_bitmap(threes, x, y, 0);
-				//al_draw_textf(font, color("Cream White"), x, y, ALLEGRO_ALIGN_CENTRE, "%d", jogo[i][j]);
+				if (jogo[i][j] <= 6) {
+					al_draw_textf(font, color("Black"), x + 27, y + 10,
+						ALLEGRO_ALIGN_CENTRE, "%d", jogo[i][j]);
+				}
+				else if (jogo[i][j] <= 96) {
+					al_draw_textf(font2, color("Black"), x + 27, y + 15,
+						ALLEGRO_ALIGN_CENTRE, "%d", jogo[i][j]);
+				}
+				else if (jogo[i][j] <= 768) {
+					al_draw_textf(font3, color("Black"), x + 27, y + 18,
+						ALLEGRO_ALIGN_CENTRE, "%d", jogo[i][j]);
+				}
+				else if (jogo[i][j] == 6144 || jogo[i][j] == 3072) {
+					al_draw_textf(font4, color("Red"), x + 27, y + 21,
+						ALLEGRO_ALIGN_CENTRE, "%d", jogo[i][j]);
+				}
+				else {
+					al_draw_textf(font4, color("Black"), x + 27, y + 10,
+						ALLEGRO_ALIGN_CENTRE, "%d", jogo[i][j]);
+				}
 			}
 		}
 	}
+
+	al_destroy_font(font);
+	al_destroy_font(font2);
+	al_destroy_font(font3);
+	al_destroy_font(font4);
+
+	al_destroy_bitmap(one);
+	al_destroy_bitmap(two);
+	al_destroy_bitmap(threes);
+	al_destroy_bitmap(barrier);
+	al_destroy_bitmap(matrix);
+
 	al_flip_display();
 }
 // Função que sei lá
-void gameover() { printf("\ncabou\n"); }
+void gameover() {
+	printf("\ncabou\n");
+}
 // Função que começa um novo jogo
 void newGame(ALLEGRO_DISPLAY* gameWindow, ALLEGRO_BITMAP* mainMenu) {
 	int jogo[7][7], score = 0, nextValue, exitGame = 0, gameTime = 0;
@@ -483,6 +526,7 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, ALLEGRO_BITMAP* mainMenu) {
 	newBoard(jogo, &score, &nextValue);
 
 	al_draw_bitmap(inGame, 0, 0, 0);
+	printt(&gameTime);
 	prints(score);
 
 	printm(jogo, score, nextValue);
@@ -506,34 +550,38 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, ALLEGRO_BITMAP* mainMenu) {
 				printm(jogo, score, nextValue);
 				allegro_printm(jogo, nextValue);
 				prints(score);
-				if (!canContinue(jogo)) gameover();
+				if (!canContinue(jogo))
+					gameover();
 				break;
 			case ALLEGRO_KEY_DOWN:
 				pressedDown(jogo, &nextValue, &score);
 				printm(jogo, score, nextValue);
 				allegro_printm(jogo, nextValue);
 				prints(score);
-				if (!canContinue(jogo)) gameover();
+				if (!canContinue(jogo))
+					gameover();
 				break;
 			case ALLEGRO_KEY_LEFT:
 				pressedLeft(jogo, &nextValue, &score);
 				printm(jogo, score, nextValue);
 				allegro_printm(jogo, nextValue);
 				prints(score);
-				if (!canContinue(jogo)) gameover();
+				if (!canContinue(jogo))
+					gameover();
 				break;
 			case ALLEGRO_KEY_RIGHT:
 				pressedRight(jogo, &nextValue, &score);
 				printm(jogo, score, nextValue);
 				allegro_printm(jogo, nextValue);
 				prints(score);
-				if (!canContinue(jogo)) gameover();
+				if (!canContinue(jogo))
+					gameover();
 				break;
 			}
 		}
 
 		if (gameEvent.type == ALLEGRO_EVENT_TIMER) {
-			//printt(&gameTime);
+			printt(&gameTime);
 		}
 	}
 }
