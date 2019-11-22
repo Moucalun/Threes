@@ -411,7 +411,7 @@ ALLEGRO_COLOR color(char* color) {
 void prints(int score) {
 	ALLEGRO_FONT* font = al_load_font("assets/ttf/Arcade_Alternate.ttf", 18, 0);
 
-	al_draw_filled_rectangle(84, 53, 288, 74, color("Light Blue"));
+	al_draw_filled_rectangle(84, 53, 273, 74, color("Light Blue"));
 	al_draw_textf(font, color("Cream White"), 183.0, 55.0, ALLEGRO_ALIGN_CENTRE,
 		"%d", score);
 	al_flip_display();
@@ -425,8 +425,6 @@ void printt(int* gameTime) {
 	int min = *gameTime / 60;
 	int hrs = *gameTime / 3600;
 
-	//printf("Tempo de jogo:\n%02d:%02d:%02d\n", hrs, min, sec);
-
 	al_draw_filled_rectangle(84, 79, 273, 101, color("Light Blue"));
 	al_draw_textf(font, color("Cream White"), 183.0, 82, ALLEGRO_ALIGN_CENTRE,
 		"%02d:%02d:%02d", hrs, min, sec);
@@ -435,8 +433,7 @@ void printt(int* gameTime) {
 }
 // Função que imprime a matriz no jogo
 void allegro_printm(int jogo[][7], int nextValue) {
-	ALLEGRO_FONT* font = al_load_font("assets/ttf/Arcade_Alternate.ttf", 35,
-		0);  // don't forget to destroy all this
+	ALLEGRO_FONT* font = al_load_font("assets/ttf/Arcade_Alternate.ttf", 35, 0);
 	ALLEGRO_FONT* font2 = al_load_font("assets/ttf/Arcade_Alternate.ttf", 25, 0);
 	ALLEGRO_FONT* font3 = al_load_font("assets/ttf/Arcade_Alternate.ttf", 18, 0);
 	ALLEGRO_FONT* font4 = al_load_font("assets/ttf/Arcade_Alternate.ttf", 14, 0);
@@ -451,50 +448,74 @@ void allegro_printm(int jogo[][7], int nextValue) {
 	al_draw_bitmap(matrix, xI, yI, 0);
 	for (int i = 1; i < 6; ++i) {
 		for (int j = 1; j < 6; ++j) {
-			if (jogo[i][j] == 1) {
-				float x = (xI + (50.0 * j) - 50.0);
-				float y = (yI + (50.0 * i) - 50.0);
-				al_draw_bitmap(one, x, y, 0);
-				al_draw_text(font, color("Cream White"), x + 27, y + 10,
-					ALLEGRO_ALIGN_CENTRE, "1");
+			if (jogo[i][j] != 0) {
+				if (jogo[i][j] == 1) {
+					float x = (xI + (50.0 * j) - 50.0);
+					float y = (yI + (50.0 * i) - 50.0);
+					al_draw_bitmap(one, x, y, 0);
+					al_draw_text(font, color("Cream White"), x + 27, y + 10,
+						ALLEGRO_ALIGN_CENTRE, "1");
+				}
+				else if (jogo[i][j] == 2) {
+					float x = (xI + (50.0 * j) - 50.0);
+					float y = (yI + (50.0 * i) - 50.0);
+					al_draw_bitmap(two, x, y, 0);
+					al_draw_text(font, color("Cream White"), x + 27, y + 10,
+						ALLEGRO_ALIGN_CENTRE, "2");
+				}
+				else if (jogo[i][j] == -1) {
+					float x = (xI + (50.0 * j) - 50.0);
+					float y = (yI + (50.0 * i) - 50.0);
+					al_draw_bitmap(barrier, x, y, 0);
+				}
+				else if (jogo[i][j] != 0) {
+					float x = (xI + (50.0 * j) - 50.0);
+					float y = (yI + (50.0 * i) - 50.0);
+					al_draw_bitmap(threes, x, y, 0);
+					if (jogo[i][j] <= 6) {
+						al_draw_textf(font, color("Black"), x + 27, y + 10,
+							ALLEGRO_ALIGN_CENTRE, "%d", jogo[i][j]);
+					}
+					else if (jogo[i][j] <= 96) {
+						al_draw_textf(font2, color("Black"), x + 27, y + 15,
+							ALLEGRO_ALIGN_CENTRE, "%d", jogo[i][j]);
+					}
+					else if (jogo[i][j] <= 768) {
+						al_draw_textf(font3, color("Black"), x + 27, y + 18,
+							ALLEGRO_ALIGN_CENTRE, "%d", jogo[i][j]);
+					}
+					else if (jogo[i][j] == 6144 || jogo[i][j] == 3072) {
+						al_draw_textf(font4, color("Red"), x + 27, y + 21,
+							ALLEGRO_ALIGN_CENTRE, "%d", jogo[i][j]);
+					}
+					else {
+						al_draw_textf(font4, color("Black"), x + 27, y + 10,
+							ALLEGRO_ALIGN_CENTRE, "%d", jogo[i][j]);
+					}
+				}
 			}
-			else if (jogo[i][j] == 2) {
-				float x = (xI + (50.0 * j) - 50.0);
-				float y = (yI + (50.0 * i) - 50.0);
-				al_draw_bitmap(two, x, y, 0);
-				al_draw_text(font, color("Cream White"), x + 27, y + 10,
-					ALLEGRO_ALIGN_CENTRE, "2");
-			}
-			else if (jogo[i][j] == -1) {
-				float x = (xI + (50.0 * j) - 50.0);
-				float y = (yI + (50.0 * i) - 50.0);
-				al_draw_bitmap(barrier, x, y, 0);
-			}
-			else if (jogo[i][j] != 0) {
-				float x = (xI + (50.0 * j) - 50.0);
-				float y = (yI + (50.0 * i) - 50.0);
-				al_draw_bitmap(threes, x, y, 0);
-				if (jogo[i][j] <= 6) {
-					al_draw_textf(font, color("Black"), x + 27, y + 10,
-						ALLEGRO_ALIGN_CENTRE, "%d", jogo[i][j]);
-				}
-				else if (jogo[i][j] <= 96) {
-					al_draw_textf(font2, color("Black"), x + 27, y + 15,
-						ALLEGRO_ALIGN_CENTRE, "%d", jogo[i][j]);
-				}
-				else if (jogo[i][j] <= 768) {
-					al_draw_textf(font3, color("Black"), x + 27, y + 18,
-						ALLEGRO_ALIGN_CENTRE, "%d", jogo[i][j]);
-				}
-				else if (jogo[i][j] == 6144 || jogo[i][j] == 3072) {
-					al_draw_textf(font4, color("Red"), x + 27, y + 21,
-						ALLEGRO_ALIGN_CENTRE, "%d", jogo[i][j]);
-				}
-				else {
-					al_draw_textf(font4, color("Black"), x + 27, y + 10,
-						ALLEGRO_ALIGN_CENTRE, "%d", jogo[i][j]);
-				}
-			}
+		}
+	}
+	if (nextValue != 0) {
+		if (nextValue == 1) {
+			al_draw_bitmap(one, 295.0, 10.0, 0);
+			al_draw_text(font, color("Cream White"), 295 + 27, 10 + 10, ALLEGRO_ALIGN_CENTRE, "1");
+		}
+		else if (nextValue == 2) {
+			al_draw_bitmap(two, 295.0, 10.0, 0);
+			al_draw_text(font, color("Cream White"), 295 + 27, 10 + 10, ALLEGRO_ALIGN_CENTRE, "2");
+		}
+		else if (nextValue == 3 || nextValue == 6) {
+			al_draw_bitmap(threes, 295.0, 10.0, 0);
+			al_draw_textf(font, color("Black"), 295 + 27, 10 + 10, ALLEGRO_ALIGN_CENTRE, "%d", nextValue);
+		}
+		else if (nextValue >= 12 && nextValue <= 96) {
+			al_draw_bitmap(threes, 295.0, 10.0, 0);
+			al_draw_textf(font2, color("Black"), 295 + 27, 295 + 15, ALLEGRO_ALIGN_CENTRE, "%d", nextValue);
+		}
+		else {
+			al_draw_bitmap(threes, 295.0, 10.0, 0);
+			al_draw_text(font3, color("Black"), 295 + 27, 295 + 18, ALLEGRO_ALIGN_CENTRE, "192");
 		}
 	}
 
@@ -516,7 +537,7 @@ void gameover() {
 	printf("\ncabou\n");
 }
 // Função que começa um novo jogo
-void newGame(ALLEGRO_DISPLAY* gameWindow, ALLEGRO_BITMAP* mainMenu) {
+void newGame(ALLEGRO_DISPLAY* gameWindow) {
 	int jogo[7][7], score = 0, nextValue, exitGame = 0, gameTime = 0;
 	// char player[11];
 	ALLEGRO_BITMAP* inGame = al_load_bitmap("assets/bmp/inGame.bmp");
@@ -610,7 +631,9 @@ void allegro_main() {
 		if (mainEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
 			if (mainEvent.mouse.x >= 44.0 && mainEvent.mouse.x <= 282) {
 				if (mainEvent.mouse.y >= 118 && mainEvent.mouse.y <= 231) {
-					newGame(gameWindow, mainMenu);
+					al_destroy_bitmap(mainMenu);
+					newGame(gameWindow);
+					al_draw_bitmap(mainMenu, 0, 0, 0);
 				}
 			}
 		}
