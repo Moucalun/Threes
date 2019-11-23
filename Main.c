@@ -399,6 +399,12 @@ ALLEGRO_COLOR color(char* color) {
 	else if (color == "Red") {
 		return al_map_rgb(240, 19, 77);
 	}
+	else if (color == "Pink") {
+		return al_map_rgb(210, 80, 114);
+	}
+	else if (color == "Gray") {
+		return al_map_rgb(182, 178, 168);
+	}
 	else {
 		return al_map_rgb(255, 255, 255);
 	}
@@ -533,8 +539,6 @@ void allegro_printm(int jogo[][7], int nextValue) {
 
 	al_flip_display();
 }
-// Função que sei lá
-void gameover() { printf("\ncabou\n"); }
 // Função que seleciona o nome do jogador
 void nameSelect(char player[11]) {
 	int nameSelected = 0, i = 0;
@@ -569,8 +573,9 @@ void nameSelect(char player[11]) {
 				if (i < 11) {
 					if ((nameEvent.keyboard.unichar >= 65 &&
 						nameEvent.keyboard.unichar <= 90) ||
-						nameEvent.keyboard.unichar >= 97 &&
-						nameEvent.keyboard.unichar <= 122) {
+						(nameEvent.keyboard.unichar >= 97 &&
+						nameEvent.keyboard.unichar <= 122) ||
+						(nameEvent.keyboard.unichar == 32)) {
 						printf("  %c, %d  \n", nameEvent.keyboard.unichar,
 							nameEvent.keyboard.unichar);
 						player[i] = nameEvent.keyboard.unichar;
@@ -596,18 +601,52 @@ void nameSelect(char player[11]) {
 	al_destroy_font(font);
 	al_rest(1.0);
 }
+// Função de Pause
+void pauseGame(int jogo[][7], int nextValue, ALLEGRO_FONT *nameFont, int *gameTime, int score, char player[7], ALLEGRO_BITMAP *inGame) {
+	int resume = 0;
+	ALLEGRO_BITMAP* pauseScreen = al_load_bitmap("assets/bmp/pauseScreen.bmp");
+	al_convert_mask_to_alpha(pauseScreen, color("Gray"));
+	ALLEGRO_EVENT_QUEUE* pauseQueue = al_create_event_queue();
+	al_register_event_source(pauseQueue, al_get_keyboard_event_source());
+	al_register_event_source(pauseQueue, al_get_mouse_event_source());
+	al_draw_bitmap(pauseScreen, 0, 0, 0);
+	al_flip_display();
+	while (!resume) {
+		ALLEGRO_EVENT pauseEvent;
+		al_wait_for_event(pauseQueue, &pauseEvent);
+		if (pauseEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
+			if (pauseEvent.mouse.x >= 129 && pauseEvent.mouse.x <= 198) {
+				if (pauseEvent.mouse.y >= 204 && pauseEvent.mouse.y <= 273) {
+					resume = 1;
+					al_draw_bitmap(inGame, 0, 0, 0);
+					al_draw_textf(nameFont, color("Pink"), 103, 428, 0, "%s", player);
+					printt(gameTime);
+					prints(score);
+					printm(jogo, score, nextValue);
+					allegro_printm(jogo, nextValue);
+					al_flip_display();
+				}
+			}
+		}
+	}
+	al_destroy_bitmap(pauseScreen);
+	al_destroy_event_queue(pauseQueue);
+}
 // Função que começa um novo jogo
 void newGame(ALLEGRO_DISPLAY* gameWindow) {
-	int jogo[7][7], score = 0, nextValue, exitGame = 0, gameTime = 0;
+	int jogo[7][7], score = 0, nextValue, exitGame = 0, gameTime = 0, timeStoppedAt;
 	char player[11];
 	ALLEGRO_BITMAP* inGame = al_load_bitmap("assets/bmp/inGame.bmp");
 	ALLEGRO_TIMER* gameTimer = al_create_timer(1.0);
+	ALLEGRO_FONT* nameFont = al_load_font("assets/ttf/Arcade_Classic.ttf", 18, 0);
 
 	nameSelect(player);
 
 	newBoard(jogo, &score, &nextValue);
 
 	al_draw_bitmap(inGame, 0, 0, 0);
+	al_draw_textf(nameFont, color("Pink"), 103, 428, 0, "%s", player);
+
 	printt(&gameTime);
 	prints(score);
 
@@ -632,34 +671,56 @@ void newGame(ALLEGRO_DISPLAY* gameWindow) {
 				printm(jogo, score, nextValue);
 				allegro_printm(jogo, nextValue);
 				prints(score);
-				if (!canContinue(jogo)) gameover();
+				if (!canContinue(jogo)) {
+					exitGame = 1;
+					timeStoppedAt = gameTime;
+				}
 				break;
 			case ALLEGRO_KEY_DOWN:
 				pressedDown(jogo, &nextValue, &score);
 				printm(jogo, score, nextValue);
 				allegro_printm(jogo, nextValue);
 				prints(score);
-				if (!canContinue(jogo)) gameover();
+				if (!canContinue(jogo)) {
+					exitGame = 1;
+					timeStoppedAt = gameTime;
+				}
 				break;
 			case ALLEGRO_KEY_LEFT:
 				pressedLeft(jogo, &nextValue, &score);
 				printm(jogo, score, nextValue);
 				allegro_printm(jogo, nextValue);
 				prints(score);
-				if (!canContinue(jogo)) gameover();
+				if (!canContinue(jogo)) {
+					exitGame = 1;
+					timeStoppedAt = gameTime;
+				}
 				break;
 			case ALLEGRO_KEY_RIGHT:
 				pressedRight(jogo, &nextValue, &score);
 				printm(jogo, score, nextValue);
 				allegro_printm(jogo, nextValue);
 				prints(score);
-				if (!canContinue(jogo)) gameover();
+				if (!canContinue(jogo)) {
+					exitGame = 1;
+					timeStoppedAt = gameTime;
+				}
 				break;
 			}
 		}
 
 		if (gameEvent.type == ALLEGRO_EVENT_TIMER) {
 			printt(&gameTime);
+		}
+
+		if (gameEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
+			if (gameEvent.mouse.x >= 277 && gameEvent.mouse.x <= 302.7) {
+				if (gameEvent.mouse.y >= 78.3 && gameEvent.mouse.y <= 102) {
+					al_stop_timer(gameTimer);
+					pauseGame(jogo, nextValue, nameFont, &gameTime, score, player, inGame);
+					al_start_timer(gameTimer);
+				}
+			}
 		}
 	}
 }
