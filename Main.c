@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
+#include <ctype.h>
 
 // Inicializa as funções do Allegro
 void init() {
@@ -20,6 +21,7 @@ void init() {
 	al_init_font_addon();
 	al_init_ttf_addon();
 	al_init_primitives_addon();
+	al_init_acodec_addon();
 
 	al_install_mouse();
 	al_install_keyboard();
@@ -383,12 +385,6 @@ void newBoard(int jogo[][7], int* score, int* nextValue) {
 	printf("\nMatriz Inicial: \n");
 	*nextValue = next(jogo);
 }
-// Função que recebe o jogador
-void getPlayer(char* p_player) {
-	printf("Insira seu nome: \n");
-	fgets(p_player, 11, stdin);
-	printf("Bora pro jogo, %s", p_player);
-}
 // Função que retorna uma allegro color
 ALLEGRO_COLOR color(char* color) {
 	if (color == "Black") {
@@ -499,23 +495,28 @@ void allegro_printm(int jogo[][7], int nextValue) {
 	if (nextValue != 0) {
 		if (nextValue == 1) {
 			al_draw_bitmap(one, 295.0, 10.0, 0);
-			al_draw_text(font, color("Cream White"), 295 + 27, 10 + 10, ALLEGRO_ALIGN_CENTRE, "1");
+			al_draw_text(font, color("Cream White"), 295 + 27, 10 + 10,
+				ALLEGRO_ALIGN_CENTRE, "1");
 		}
 		else if (nextValue == 2) {
 			al_draw_bitmap(two, 295.0, 10.0, 0);
-			al_draw_text(font, color("Cream White"), 295 + 27, 10 + 10, ALLEGRO_ALIGN_CENTRE, "2");
+			al_draw_text(font, color("Cream White"), 295 + 27, 10 + 10,
+				ALLEGRO_ALIGN_CENTRE, "2");
 		}
 		else if (nextValue == 3 || nextValue == 6) {
 			al_draw_bitmap(threes, 295.0, 10.0, 0);
-			al_draw_textf(font, color("Black"), 295 + 27, 10 + 10, ALLEGRO_ALIGN_CENTRE, "%d", nextValue);
+			al_draw_textf(font, color("Black"), 295 + 27, 10 + 10,
+				ALLEGRO_ALIGN_CENTRE, "%d", nextValue);
 		}
 		else if (nextValue >= 12 && nextValue <= 96) {
 			al_draw_bitmap(threes, 295.0, 10.0, 0);
-			al_draw_textf(font2, color("Black"), 295 + 27, 295 + 15, ALLEGRO_ALIGN_CENTRE, "%d", nextValue);
+			al_draw_textf(font2, color("Black"), 295 + 27, 295 + 15,
+				ALLEGRO_ALIGN_CENTRE, "%d", nextValue);
 		}
 		else {
 			al_draw_bitmap(threes, 295.0, 10.0, 0);
-			al_draw_text(font3, color("Black"), 295 + 27, 295 + 18, ALLEGRO_ALIGN_CENTRE, "192");
+			al_draw_text(font3, color("Black"), 295 + 27, 295 + 18,
+				ALLEGRO_ALIGN_CENTRE, "192");
 		}
 	}
 
@@ -533,17 +534,77 @@ void allegro_printm(int jogo[][7], int nextValue) {
 	al_flip_display();
 }
 // Função que sei lá
-void gameover() {
-	printf("\ncabou\n");
+void gameover() { printf("\ncabou\n"); }
+// Função que seleciona o nome do jogador
+void nameSelect(char player[11]) {
+	int nameSelected = 0, i = 0;
+	ALLEGRO_BITMAP* nameScreen = al_load_bitmap("assets/bmp/nameScreen.bmp");
+	ALLEGRO_EVENT_QUEUE* nameQueue = al_create_event_queue();
+	ALLEGRO_FONT* font = al_load_font("assets/ttf/Arcade_Alternate.ttf", 35, 0);
+	al_register_event_source(nameQueue, al_get_keyboard_event_source());
+
+	al_draw_bitmap(nameScreen, 0, 0, 0);
+	al_flip_display();
+
+	while (!nameSelected) {
+		ALLEGRO_EVENT nameEvent;
+		al_wait_for_event(nameQueue, &nameEvent);
+
+		if (nameEvent.type == ALLEGRO_EVENT_KEY_CHAR) {
+			switch (nameEvent.keyboard.keycode) {
+			case ALLEGRO_KEY_ENTER:
+				printf("allegro_key_enter\n");
+				if (i != 0) {
+					nameSelected = 1;
+				}
+				break;
+			case ALLEGRO_KEY_BACKSPACE:
+				printf("allegro_key_backspace\n");
+				player[i - 1] = '\0';
+				if (i != 0) {
+					i--;
+				}
+				break;
+			default:
+				if (i < 11) {
+					if ((nameEvent.keyboard.unichar >= 65 &&
+						nameEvent.keyboard.unichar <= 90) ||
+						nameEvent.keyboard.unichar >= 97 &&
+						nameEvent.keyboard.unichar <= 122) {
+						printf("  %c, %d  \n", nameEvent.keyboard.unichar,
+							nameEvent.keyboard.unichar);
+						player[i] = nameEvent.keyboard.unichar;
+						printf("got here?");
+						player[i + 1] = '\0';
+						printf("or maybe here huh?");
+						i++;
+					}
+				}
+				break;
+			}
+
+			al_draw_filled_rectangle(60, 155, 278, 251, color("Red"));
+			169;
+			al_draw_textf(font, color("Cream White"), 169.0, 203.0,
+				ALLEGRO_ALIGN_CENTRE, "%s", player);
+			al_flip_display();
+		}
+	}
+
+	al_destroy_bitmap(nameScreen);
+	al_destroy_event_queue(nameQueue);
+	al_destroy_font(font);
+	al_rest(1.0);
 }
 // Função que começa um novo jogo
 void newGame(ALLEGRO_DISPLAY* gameWindow) {
 	int jogo[7][7], score = 0, nextValue, exitGame = 0, gameTime = 0;
-	// char player[11];
+	char player[11];
 	ALLEGRO_BITMAP* inGame = al_load_bitmap("assets/bmp/inGame.bmp");
 	ALLEGRO_TIMER* gameTimer = al_create_timer(1.0);
 
-	// getPlayer(player);
+	nameSelect(player);
+
 	newBoard(jogo, &score, &nextValue);
 
 	al_draw_bitmap(inGame, 0, 0, 0);
@@ -571,32 +632,28 @@ void newGame(ALLEGRO_DISPLAY* gameWindow) {
 				printm(jogo, score, nextValue);
 				allegro_printm(jogo, nextValue);
 				prints(score);
-				if (!canContinue(jogo))
-					gameover();
+				if (!canContinue(jogo)) gameover();
 				break;
 			case ALLEGRO_KEY_DOWN:
 				pressedDown(jogo, &nextValue, &score);
 				printm(jogo, score, nextValue);
 				allegro_printm(jogo, nextValue);
 				prints(score);
-				if (!canContinue(jogo))
-					gameover();
+				if (!canContinue(jogo)) gameover();
 				break;
 			case ALLEGRO_KEY_LEFT:
 				pressedLeft(jogo, &nextValue, &score);
 				printm(jogo, score, nextValue);
 				allegro_printm(jogo, nextValue);
 				prints(score);
-				if (!canContinue(jogo))
-					gameover();
+				if (!canContinue(jogo)) gameover();
 				break;
 			case ALLEGRO_KEY_RIGHT:
 				pressedRight(jogo, &nextValue, &score);
 				printm(jogo, score, nextValue);
 				allegro_printm(jogo, nextValue);
 				prints(score);
-				if (!canContinue(jogo))
-					gameover();
+				if (!canContinue(jogo)) gameover();
 				break;
 			}
 		}
