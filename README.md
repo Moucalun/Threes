@@ -1,5 +1,3 @@
-# Threes
-
 ![Threes](https://github.com/Moucalun/Threes/blob/master/assets/jpg/logo.jpg)
 
 Projeto da disciplina Laboratório de Programação I, UFSM.
