@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include <ctype.h>
-
 // Inicializa as funções do Allegro
 void init() {
 	srand((int)time(NULL));
@@ -109,7 +108,7 @@ int canSum(int a, int b) {
 	}
 	// Zero com 0
 	else if (a == 0 && b == 0) {
-		return 1;
+		return 2;
 	}
 	// Qualquer um com 0
 	else if ((a == 0 || b == 0)) {
@@ -212,6 +211,7 @@ int randPosColumns(int jogo[][7], int column) {
 // Faz o movimento das peças, retorna 1 caso houver movimento
 int move(int jogo[][7], int a, int b, int* score) {
 	int moved = 0, moves = 0, sum, var, tempScore = 0;
+	ALLEGRO_SAMPLE* sdX2 = al_load_sample("assets/ogg/soundX2.ogg");
 
 	if (a == -1) {
 		for (int y = 0; y < 6; y++) {
@@ -285,13 +285,14 @@ int move(int jogo[][7], int a, int b, int* score) {
 	// Updeiteia o score
 	if (moves > 1) {
 		tempScore = tempScore * 2;
+		al_play_sample(sdX2, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 	}
 	*score = *score + tempScore;
 
 	return moved;
 }
 // Comandos ao mover a matriz para cima
-void pressedUp(int jogo[][7], int* nextValue, int* score) {
+void pressedUp(int jogo[][7], int* nextValue, int* score, ALLEGRO_SAMPLE* sdMove, ALLEGRO_SAMPLE* sdCantMove) {
 	printf("\nUp\n");
 	int check = move(jogo, -1, 0, &*score);
 
@@ -299,36 +300,48 @@ void pressedUp(int jogo[][7], int* nextValue, int* score) {
 		int i = randPosLines(jogo, 5);
 		if (i != 0) {
 			jogo[5][i] = *nextValue;
-			*nextValue = next(jogo);
+			*nextValue = next(jogo);	
+			al_play_sample(sdMove, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+		}
+		else {
+			al_play_sample(sdCantMove, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 		}
 	}
 }
 // Comandos ao mover a matriz para baixo
-void pressedDown(int jogo[][7], int* nextValue, int* score) {
+void pressedDown(int jogo[][7], int* nextValue, int* score, ALLEGRO_SAMPLE* sdMove, ALLEGRO_SAMPLE* sdCantMove) {
 	printf("\nDown\n");
 	int check = move(jogo, 1, 0, &*score);
 	if (check) {
 		int i = randPosLines(jogo, 1);
 		if (i != 0) {
 			jogo[1][i] = *nextValue;
-			*nextValue = next(jogo);
+			*nextValue = next(jogo);	
+			al_play_sample(sdMove, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+		}
+		else {
+			al_play_sample(sdCantMove, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 		}
 	}
 }
 // Comandos ao mover a matriz para esquerda
-void pressedLeft(int jogo[][7], int* nextValue, int* score) {
+void pressedLeft(int jogo[][7], int* nextValue, int* score, ALLEGRO_SAMPLE* sdMove, ALLEGRO_SAMPLE* sdCantMove) {
 	printf("\nLeft\n");
 	int check = move(jogo, 0, -1, &*score);
 	if (check) {
 		int i = randPosColumns(jogo, 5);
 		if (i != 0) {
 			jogo[i][5] = *nextValue;
-			*nextValue = next(jogo);
+			*nextValue = next(jogo);	
+			al_play_sample(sdMove, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+		}
+		else {
+			al_play_sample(sdCantMove, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 		}
 	}
 }
 // Comandos ao mover a matriz para direita
-void pressedRight(int jogo[][7], int* nextValue, int* score) {
+void pressedRight(int jogo[][7], int* nextValue, int* score, ALLEGRO_SAMPLE* sdMove, ALLEGRO_SAMPLE* sdCantMove) {
 	printf("\nRight\n");
 	int check = move(jogo, 0, 1, &*score);
 	if (check) {
@@ -336,6 +349,10 @@ void pressedRight(int jogo[][7], int* nextValue, int* score) {
 		if (i != 0) {
 			jogo[i][1] = *nextValue;
 			*nextValue = next(jogo);
+			al_play_sample(sdMove, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+		}
+		else {
+			al_play_sample(sdCantMove, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 		}
 	}
 }
@@ -385,6 +402,7 @@ void newBoard(int jogo[][7], int* score, int* nextValue) {
 	printf("\nMatriz Inicial: \n");
 	*nextValue = next(jogo);
 }
+
 // Função que retorna uma allegro color
 ALLEGRO_COLOR color(char* color) {
 	if (color == "Black") {
@@ -539,12 +557,42 @@ void allegro_printm(int jogo[][7], int nextValue) {
 
 	al_flip_display();
 }
+
+/*
+void highscores() {
+
+	typedef struct {
+		char nome[11];
+		int score;
+	} record;
+
+	ALLEGRO_BITMAP* highscoresMenu = al_load_bitmap("assets/bmp/highscoresMenu");
+	FILE* highscoresFile = al_fopen("highscores.threes", "w+");
+	record SCOREBOARD[10];
+	int i;
+
+	for (i = 0; i < 10; ++i) {
+		al_f
+		fscanf_s(highscoresFile, "%s %d\n", SCOREBOARD[i].nome, &(SCOREBOARD[i].score));
+	}
+
+	for (i = 0; i < 10; i++) {
+		printf("Name:%s, Score:%d\n", SCOREBOARD[i].nome, SCOREBOARD[i].score);
+	}
+
+}
+*/
+
 // Função que seleciona o nome do jogador
 void nameSelect(char player[11]) {
 	int nameSelected = 0, i = 0;
 	ALLEGRO_BITMAP* nameScreen = al_load_bitmap("assets/bmp/nameScreen.bmp");
 	ALLEGRO_EVENT_QUEUE* nameQueue = al_create_event_queue();
 	ALLEGRO_FONT* font = al_load_font("assets/ttf/Arcade_Alternate.ttf", 35, 0);
+	ALLEGRO_SAMPLE* sdChar = al_load_sample("assets/ogg/soundChar.ogg");
+	ALLEGRO_SAMPLE* sdBackspace = al_load_sample("assets/ogg/soundBackspace.ogg");
+	ALLEGRO_SAMPLE* sdError = al_load_sample("assets/ogg/soundError.ogg");
+	ALLEGRO_SAMPLE* sdOk = al_load_sample("assets/ogg/soundNewGame.ogg");
 	al_register_event_source(nameQueue, al_get_keyboard_event_source());
 
 	al_draw_bitmap(nameScreen, 0, 0, 0);
@@ -560,13 +608,20 @@ void nameSelect(char player[11]) {
 				printf("allegro_key_enter\n");
 				if (i != 0) {
 					nameSelected = 1;
+					al_play_sample(sdOk, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+				}
+				else {
+					al_play_sample(sdError, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 				}
 				break;
 			case ALLEGRO_KEY_BACKSPACE:
 				printf("allegro_key_backspace\n");
-				player[i - 1] = '\0';
 				if (i != 0) {
+					al_play_sample(sdBackspace, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+					player[i - 1] = '\0';
 					i--;
+				} else {
+					al_play_sample(sdError, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 				}
 				break;
 			default:
@@ -576,6 +631,7 @@ void nameSelect(char player[11]) {
 						(nameEvent.keyboard.unichar >= 97 &&
 						nameEvent.keyboard.unichar <= 122) ||
 						(nameEvent.keyboard.unichar == 32)) {
+						al_play_sample(sdChar, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 						printf("  %c, %d  \n", nameEvent.keyboard.unichar,
 							nameEvent.keyboard.unichar);
 						player[i] = nameEvent.keyboard.unichar;
@@ -584,6 +640,12 @@ void nameSelect(char player[11]) {
 						printf("or maybe here huh?");
 						i++;
 					}
+					else {
+						al_play_sample(sdError, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+					}
+				}
+				else {
+					al_play_sample(sdError, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 				}
 				break;
 			}
@@ -602,7 +664,7 @@ void nameSelect(char player[11]) {
 	al_rest(1.0);
 }
 // Função de Pause
-void pauseGame(int jogo[][7], int nextValue, ALLEGRO_FONT *nameFont, int *gameTime, int score, char player[7], ALLEGRO_BITMAP *inGame, int* gameOption) {
+void pauseGame(int jogo[][7], int nextValue, ALLEGRO_FONT *nameFont, int *gameTime, int score, char player[11], ALLEGRO_BITMAP *inGame, int* gameOption) {
 	int resume = 0;
 	ALLEGRO_BITMAP* pauseScreen = al_load_bitmap("assets/bmp/pauseScreen.bmp");
 	al_convert_mask_to_alpha(pauseScreen, color("Gray"));
@@ -646,12 +708,20 @@ void pauseGame(int jogo[][7], int nextValue, ALLEGRO_FONT *nameFont, int *gameTi
 }
 // Função que começa um novo jogo
 void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
-	int jogo[7][7], score = 0, nextValue, exitGame = 0, gameTime = 0, timeStoppedAt, gameOption = 0;
+	int jogo[7][7], score = 0, nextValue, exitGame = 0, gameTime = 0, timeStoppedAt, gameOption = 0, outOfMoves = 0;
 	char player[11];
 	ALLEGRO_BITMAP* inGame = al_load_bitmap("assets/bmp/inGame.bmp");
 	ALLEGRO_TIMER* gameTimer = al_create_timer(1.0);
 	ALLEGRO_FONT* nameFont = al_load_font("assets/ttf/Arcade_Classic.ttf", 18, 0);
+	ALLEGRO_FONT* outOfMovesFont = al_load_font("assets/ttf/Arcade_Classic.ttf", 20, 0);
+	ALLEGRO_SAMPLE* sdHovering = al_load_sample("assets/ogg/soundHovering.ogg");
+	ALLEGRO_SAMPLE* sdPauseIn = al_load_sample("assets/ogg/soundPauseIn.ogg");
+	ALLEGRO_SAMPLE* sdPauseOut = al_load_sample("assets/ogg/soundPauseOut.ogg");
+	ALLEGRO_SAMPLE* sdGameOver = al_load_sample("assets/ogg/soundGameOver.ogg");
+	ALLEGRO_SAMPLE* sdMove = al_load_sample("assets/ogg/soundMove.ogg");
+	ALLEGRO_SAMPLE* sdCantMove = al_load_sample("assets/ogg/soundCantMove.ogg");
 
+	
 	nameSelect(player);
 
 	newBoard(jogo, &score, &nextValue);
@@ -679,43 +749,47 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 		if (gameEvent.type == ALLEGRO_EVENT_KEY_DOWN) {
 			switch (gameEvent.keyboard.keycode) {
 			case ALLEGRO_KEY_UP:
-				pressedUp(jogo, &nextValue, &score);
+				pressedUp(jogo, &nextValue, &score, sdMove, sdCantMove);
 				printm(jogo, score, nextValue);
 				allegro_printm(jogo, nextValue);
 				prints(score);
 				if (!canContinue(jogo)) {
 					exitGame = 1;
 					timeStoppedAt = gameTime;
+					outOfMoves = 1;
 				}
 				break;
 			case ALLEGRO_KEY_DOWN:
-				pressedDown(jogo, &nextValue, &score);
+				pressedDown(jogo, &nextValue, &score, sdMove, sdCantMove);
 				printm(jogo, score, nextValue);
 				allegro_printm(jogo, nextValue);
 				prints(score);
 				if (!canContinue(jogo)) {
 					exitGame = 1;
 					timeStoppedAt = gameTime;
+					outOfMoves = 1;
 				}
 				break;
 			case ALLEGRO_KEY_LEFT:
-				pressedLeft(jogo, &nextValue, &score);
+				pressedLeft(jogo, &nextValue, &score, sdMove, sdCantMove);
 				printm(jogo, score, nextValue);
 				allegro_printm(jogo, nextValue);
 				prints(score);
 				if (!canContinue(jogo)) {
 					exitGame = 1;
 					timeStoppedAt = gameTime;
+					outOfMoves = 1;
 				}
 				break;
 			case ALLEGRO_KEY_RIGHT:
-				pressedRight(jogo, &nextValue, &score);
+				pressedRight(jogo, &nextValue, &score, sdMove, sdCantMove);
 				printm(jogo, score, nextValue);
 				allegro_printm(jogo, nextValue);
 				prints(score);
 				if (!canContinue(jogo)) {
 					exitGame = 1;
 					timeStoppedAt = gameTime;
+					outOfMoves = 1;
 				}
 				break;
 			}
@@ -729,8 +803,9 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 			if (gameEvent.mouse.x >= 277 && gameEvent.mouse.x <= 302.7) {
 				if (gameEvent.mouse.y >= 78.3 && gameEvent.mouse.y <= 102) {
 					al_stop_timer(gameTimer);
+					al_play_sample(sdPauseIn, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 					pauseGame(jogo, nextValue, nameFont, &gameTime, score, player, inGame, &gameOption);
-
+					al_play_sample(sdPauseOut, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 					switch (gameOption){
 						case 0:
 							al_start_timer(gameTimer);
@@ -747,12 +822,21 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 			}
 		}
 	}
+	if (exitGame && outOfMoves) {
+		al_rest(1.0);
+		al_play_sample(sdGameOver, 3, 0, 0.5, ALLEGRO_PLAYMODE_ONCE, NULL);
+		al_draw_text(outOfMovesFont, color("Red"), 162, 390, ALLEGRO_ALIGN_CENTRE, "Acabaram os movimentos!");
+		al_flip_display();
+		al_rest(5.0);
+		
+	}
 
 	al_destroy_bitmap(inGame);
 	al_destroy_timer(gameTimer);
 	al_destroy_font(nameFont);
+	al_destroy_font(outOfMovesFont);
 	al_destroy_event_queue(gameQueue);
-
+	//highscores();
 }
 // Função principal do jogo
 void allegro_main() {
@@ -760,7 +844,15 @@ void allegro_main() {
 	ALLEGRO_DISPLAY* gameWindow = al_create_display(350, 450);
 	ALLEGRO_BITMAP* gameIcon = al_load_bitmap("assets/bmp/gameIcon.bmp");
 	ALLEGRO_BITMAP* mainMenu = al_load_bitmap("assets/bmp/mainMenu.bmp");
+	ALLEGRO_AUDIO_STREAM* bgMusic = al_load_audio_stream("assets/ogg/bgMusic.ogg", 4, 1024);
+	ALLEGRO_SAMPLE* sdHovering = al_load_sample("assets/ogg/soundHovering.ogg");
+	ALLEGRO_SAMPLE* sdNewGame = al_load_sample("assets/ogg/soundNewGame.ogg");
+	ALLEGRO_SAMPLE* sdSelect = al_load_sample("assets/ogg/soundSelect.ogg");
 	ALLEGRO_EVENT_QUEUE* mainQueue = al_create_event_queue();
+
+	al_reserve_samples(30);
+	al_attach_audio_stream_to_mixer(bgMusic, al_get_default_mixer());
+	al_set_audio_stream_playmode(bgMusic, ALLEGRO_PLAYMODE_LOOP);
 
 	al_set_window_title(gameWindow, "Threes");
 	al_set_display_icon(gameWindow, gameIcon);
@@ -779,6 +871,8 @@ void allegro_main() {
 		if (mainEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP || isRestarting) {
 			if ((mainEvent.mouse.x >= 44.0 && mainEvent.mouse.x <= 282) || isRestarting) {
 				if ((mainEvent.mouse.y >= 118 && mainEvent.mouse.y <= 231) || isRestarting) {
+					if (isRestarting == 0)
+						al_play_sample(sdNewGame, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 					al_pause_event_queue(mainQueue, 1);
 					isRestarting = 0;
 					newGame(gameWindow, &isRestarting);
@@ -792,6 +886,7 @@ void allegro_main() {
 		}
 	}
 }
+
 // Função principal
 void main() {
 	init();
