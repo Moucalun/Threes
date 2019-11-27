@@ -557,32 +557,6 @@ void allegro_printm(int jogo[][7], int nextValue) {
 
 	al_flip_display();
 }
-
-/*
-void highscores() {
-
-	typedef struct {
-		char nome[11];
-		int score;
-	} record;
-
-	ALLEGRO_BITMAP* highscoresMenu = al_load_bitmap("assets/bmp/highscoresMenu");
-	FILE* highscoresFile = al_fopen("highscores.threes", "w+");
-	record SCOREBOARD[10];
-	int i;
-
-	for (i = 0; i < 10; ++i) {
-		al_f
-		fscanf_s(highscoresFile, "%s %d\n", SCOREBOARD[i].nome, &(SCOREBOARD[i].score));
-	}
-
-	for (i = 0; i < 10; i++) {
-		printf("Name:%s, Score:%d\n", SCOREBOARD[i].nome, SCOREBOARD[i].score);
-	}
-
-}
-*/
-
 // Função que seleciona o nome do jogador
 void nameSelect(char player[11]) {
 	int nameSelected = 0, i = 0;
@@ -721,7 +695,7 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 	ALLEGRO_SAMPLE* sdMove = al_load_sample("assets/ogg/soundMove.ogg");
 	ALLEGRO_SAMPLE* sdCantMove = al_load_sample("assets/ogg/soundCantMove.ogg");
 
-	
+
 	nameSelect(player);
 
 	newBoard(jogo, &score, &nextValue);
@@ -795,6 +769,60 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 			}
 		}
 
+		if (gameEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
+			al_wait_for_event(gameQueue, &gameEvent);
+			if (gameEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
+				if (gameEvent.mouse.dx > gameEvent.mouse.dy) {
+					if (gameEvent.mouse.dx > gameEvent.mouse.x) {
+						pressedRight(jogo, &nextValue, &score, sdMove, sdCantMove);
+						printm(jogo, score, nextValue);
+						allegro_printm(jogo, nextValue);
+						prints(score);
+						if (!canContinue(jogo)) {
+							exitGame = 1;
+							timeStoppedAt = gameTime;
+							outOfMoves = 1;
+						}
+					}
+					else if (gameEvent.mouse.dx < gameEvent.mouse.x) {
+						pressedLeft(jogo, &nextValue, &score, sdMove, sdCantMove);
+						printm(jogo, score, nextValue);
+						allegro_printm(jogo, nextValue);
+						prints(score);
+						if (!canContinue(jogo)) {
+							exitGame = 1;
+							timeStoppedAt = gameTime;
+							outOfMoves = 1;
+						}
+					}
+				}
+				else if (gameEvent.mouse.dy > gameEvent.mouse.dx) {
+					if (gameEvent.mouse.dy > gameEvent.mouse.y) {
+						pressedUp(jogo, &nextValue, &score, sdMove, sdCantMove);
+						printm(jogo, score, nextValue);
+						allegro_printm(jogo, nextValue);
+						prints(score);
+						if (!canContinue(jogo)) {
+							exitGame = 1;
+							timeStoppedAt = gameTime;
+							outOfMoves = 1;
+						}
+					}
+					else if (gameEvent.mouse.dy < gameEvent.mouse.y) {
+						pressedDown(jogo, &nextValue, &score, sdMove, sdCantMove);
+						printm(jogo, score, nextValue);
+						allegro_printm(jogo, nextValue);
+						prints(score);
+						if (!canContinue(jogo)) {
+							exitGame = 1;
+							timeStoppedAt = gameTime;
+							outOfMoves = 1;
+						}
+				}
+			}
+		}
+		}
+
 		if (gameEvent.type == ALLEGRO_EVENT_TIMER) {
 			printt(&gameTime);
 		}
@@ -822,6 +850,7 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 			}
 		}
 	}
+
 	if (exitGame && outOfMoves) {
 		al_rest(1.0);
 		al_play_sample(sdGameOver, 3, 0, 0.5, ALLEGRO_PLAYMODE_ONCE, NULL);
@@ -886,7 +915,6 @@ void allegro_main() {
 		}
 	}
 }
-
 // Função principal
 void main() {
 	init();
