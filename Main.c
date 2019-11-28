@@ -10,6 +10,21 @@
 #include <stdlib.h>
 #include <time.h>
 #include <ctype.h>
+
+/* -------------------------------- To Do ---------------------------------------
+
+--------------- Obrigatórios ----------------------------------------------------
+	- Ler e escrever os highscores em arquivo
+	- Criar código para sortear os highscores
+	- Criar sessão de ajuda
+	- Permitir o uso do mouse no jogo
+
+--------------- Adicionais ------------------------------------------------------
+	- Criar highscores na tela inicial
+	- Permitir uso de teclado para escolher os Menus
+
+---------------------------------------------------------------------------------
+*/
 // Inicializa as funções do Allegro
 void init() {
 	srand((int)time(NULL));
@@ -556,6 +571,22 @@ void allegro_printm(int jogo[][7], int nextValue) {
 
 	al_flip_display();
 }
+
+// Função que imprime o scoreboard em um arquivo
+/*void writeHighscore(int player[11], int score, ALLEGRO_DISPLAY* gameWindow) {
+	FILE* highscoreFile = fopen("Highscores.txt", "w+");
+	ALLEGRO_EVENT_QUEUE* writeQueue = al_create_event_queue();
+
+	al_register_event_source(writeQueue, al_get_mouse_event_source());
+	al_register_event_source(writeQueue, al_get_keyboard_event_source());
+	al_register_event_source(writeQueue, al_get_display_event_source(gameWindow));
+
+	fprintf(highscoreFile, "%s %d", player, score);
+
+	al_clear_to_color(al_map_rgb(255, 0, 0));
+	al_flip_display();
+}*/
+
 // Função que seleciona o nome do jogador
 void nameSelect(char player[11]) {
 	int nameSelected = 0, i = 0;
