@@ -11,21 +11,11 @@
 #include <time.h>
 #include <ctype.h>
 
-/* -------------------------------- To Do ---------------------------------------
+typedef struct {
+	char player[10];
+	int score;
+} sb;
 
---------------- Obrigatórios ----------------------------------------------------
-	- Ler e escrever os highscores em arquivo
-	- Criar código para sortear os highscores
-	- Criar sessão de ajuda
-	- Permitir o uso do mouse no jogo
-
---------------- Adicionais ------------------------------------------------------
-	- Criar highscores na tela inicial
-	- Permitir uso de teclado para escolher os Menus
-
----------------------------------------------------------------------------------
-*/
-// Inicializa as funções do Allegro
 void init() {
 	srand((int)time(NULL));
 
@@ -41,13 +31,37 @@ void init() {
 	al_install_keyboard();
 	al_install_audio();
 }
-// Retorna um valor aleatório de min até max
+
+ALLEGRO_COLOR color(char* color) {
+	if (color == "Black") {
+		return al_map_rgb(0, 0, 0);
+	}
+	else if (color == "Cream White") {
+		return al_map_rgb(245, 240, 227);
+	}
+	else if (color == "Light Blue") {
+		return al_map_rgb(64, 191, 193);
+	}
+	else if (color == "Red") {
+		return al_map_rgb(240, 19, 77);
+	}
+	else if (color == "Pink") {
+		return al_map_rgb(210, 80, 114);
+	}
+	else if (color == "Gray") {
+		return al_map_rgb(182, 178, 168);
+	}
+	else {
+		return al_map_rgb(255, 255, 255);
+	}
+}
+
 int randomizer(int min, int max) {
 	int a;
 	a = rand() % (max + 1 - min) + min;
 	return a;
 }
-// Retorna o valor da maior peça do jogo
+
 int higher(int jogo[][7]) {
 	int higher = 0;
 	for (int i = 1; i < 6; ++i) {
@@ -59,7 +73,6 @@ int higher(int jogo[][7]) {
 	}
 	return higher;
 }
-// Retorna um valor maior que 6 para next()
 int rnext(int h) {
 	int mat[7][10] = { {6, 6, 6, 6, 6, 6, 6, 6, 6, 6},
 					  {6, 6, 6, 6, 6, 6, 6, 6, 12, 12},
@@ -95,7 +108,6 @@ int rnext(int h) {
 		break;
 	}
 }
-// Retorna um valor aleatório para ser a próxima peça
 int next(int jogo[][7]) {
 	int h = higher(jogo);
 	if (h < 48) {
@@ -115,32 +127,25 @@ int next(int jogo[][7]) {
 		}
 	}
 }
-// Retorna 1 ou 2 caso a soma de A e B possa ser feita
+
 int canSum(int a, int b) {
-	// Qualquer um for -1
 	if (a == -1 || b == -1 || a == 6144 || b == 6144) {
 		return 0;
 	}
-	// Zero com 0
 	else if (a == 0 && b == 0) {
 		return 2;
 	}
-	// Qualquer um com 0
 	else if ((a == 0 || b == 0)) {
 		return 2;
 	}
-	// 1 com 2 ou 2 com 1
 	else if ((a == 1 && b == 2) || (a == 2 && b == 1)) {
 		return 1;
 	}
-	// Igual com Igual
 	else if ((a != -1 && b != -1) && (a != 1 && a != 2 && a == b)) {
 		return 1;
 	}
-	// sla?
 	return 0;
 }
-// Retorna 1 se o jogo ainda pode continuar
 int canContinue(int jogo[][7]) {
 	for (int i = 0; i < 6; i++) {
 		for (int j = 0; j < 6; j++) {
@@ -179,7 +184,7 @@ int canContinue(int jogo[][7]) {
 	}
 	return 0;
 }
-// Retorna o índice da linha em que o próximo valor aparecerá
+
 int randPosLines(int jogo[][7], int line) {
 	int cont = 0, aux, selected;
 	for (int i = 1; i < 6; ++i) {
@@ -189,11 +194,9 @@ int randPosLines(int jogo[][7], int line) {
 		}
 	}
 	if (cont == 1) {
-		// retorna a única posição que possui 0
 		return aux;
 	}
 	else if (cont > 1) {
-		// retorna a posição que possui 0 que foi escolhida aleatóriamente
 		do {
 			selected = randomizer(1, 5);
 		} while (jogo[line][selected] != 0);
@@ -201,7 +204,6 @@ int randPosLines(int jogo[][7], int line) {
 	}
 	return 0;
 }
-// Retorna o índice da coluna em que o próximo valor aparecerá
 int randPosColumns(int jogo[][7], int column) {
 	int cont = 0, aux, selected;
 	for (int i = 1; i < 6; ++i) {
@@ -211,11 +213,9 @@ int randPosColumns(int jogo[][7], int column) {
 		}
 	}
 	if (cont == 1) {
-		// retorna a única posição que possui 0
 		return aux;
 	}
 	else if (cont > 1) {
-		// retorna a posição que possui 0 que foi escolhida aleatóriamente
 		do {
 			selected = randomizer(1, 5);
 		} while (jogo[selected][column] != 0);
@@ -223,7 +223,7 @@ int randPosColumns(int jogo[][7], int column) {
 	}
 	return 0;
 }
-// Faz o movimento das peças, retorna 1 caso houver movimento
+
 int move(int jogo[][7], int a, int b, int* score) {
 	int moved = 0, moves = 0, sum, var, tempScore = 0;
 	ALLEGRO_SAMPLE* sdX2 = al_load_sample("assets/ogg/soundX2.ogg");
@@ -297,7 +297,6 @@ int move(int jogo[][7], int a, int b, int* score) {
 		}
 	}
 
-	// Updeiteia o score
 	if (moves > 1) {
 		tempScore = tempScore * 2;
 		al_play_sample(sdX2, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
@@ -306,9 +305,7 @@ int move(int jogo[][7], int a, int b, int* score) {
 
 	return moved;
 }
-// Comandos ao mover a matriz para cima
 void pressedUp(int jogo[][7], int* nextValue, int* score, ALLEGRO_SAMPLE* sdMove, ALLEGRO_SAMPLE* sdCantMove) {
-	printf("\nUp\n");
 	int check = move(jogo, -1, 0, &*score);
 
 	if (check) {
@@ -323,9 +320,7 @@ void pressedUp(int jogo[][7], int* nextValue, int* score, ALLEGRO_SAMPLE* sdMove
 		}
 	}
 }
-// Comandos ao mover a matriz para baixo
-void pressedDown(int jogo[][7], int* nextValue, int* score,	ALLEGRO_SAMPLE* sdMove, ALLEGRO_SAMPLE* sdCantMove) {
-	printf("\nDown\n");
+void pressedDown(int jogo[][7], int* nextValue, int* score, ALLEGRO_SAMPLE* sdMove, ALLEGRO_SAMPLE* sdCantMove) {
 	int check = move(jogo, 1, 0, &*score);
 	if (check) {
 		int i = randPosLines(jogo, 1);
@@ -339,9 +334,7 @@ void pressedDown(int jogo[][7], int* nextValue, int* score,	ALLEGRO_SAMPLE* sdMo
 		}
 	}
 }
-// Comandos ao mover a matriz para esquerda
 void pressedLeft(int jogo[][7], int* nextValue, int* score, ALLEGRO_SAMPLE* sdMove, ALLEGRO_SAMPLE* sdCantMove) {
-	printf("\nLeft\n");
 	int check = move(jogo, 0, -1, &*score);
 	if (check) {
 		int i = randPosColumns(jogo, 5);
@@ -355,9 +348,7 @@ void pressedLeft(int jogo[][7], int* nextValue, int* score, ALLEGRO_SAMPLE* sdMo
 		}
 	}
 }
-// Comandos ao mover a matriz para direita
 void pressedRight(int jogo[][7], int* nextValue, int* score, ALLEGRO_SAMPLE* sdMove, ALLEGRO_SAMPLE* sdCantMove) {
-	printf("\nRight\n");
 	int check = move(jogo, 0, 1, &*score);
 	if (check) {
 		int i = randPosColumns(jogo, 1);
@@ -371,8 +362,7 @@ void pressedRight(int jogo[][7], int* nextValue, int* score, ALLEGRO_SAMPLE* sdM
 		}
 	}
 }
-// Função que imprime no console a matriz, o score, e o próximo valor a ser
-// inserido
+
 void printm(int jogo[][7], int score, int nextValue) {
 	int i, j;
 	for (i = 0; i < 7; ++i) {
@@ -390,82 +380,6 @@ void printm(int jogo[][7], int score, int nextValue) {
 	printf("Score: %d\n\n", score);
 	printf("Next:  %d\n", nextValue);
 }
-// Função que cria uma nova matriz
-void newBoard(int jogo[][7], int* score, int* nextValue) {
-	int i, j, x, y;
-	for (i = 0; i < 6; ++i) {
-		for (j = 0; j < 6; j++) {
-			jogo[i][j] = 0;
-		}
-	}
-	for (i = 0; i < 7; ++i) {
-		jogo[0][i] = -1;
-		jogo[i][0] = -1;
-		jogo[6][i] = -1;
-		jogo[i][6] = -1;
-	}
-	jogo[randomizer(1, 5)][randomizer(1, 5)] = -1;
-	i = 1;
-	do {
-		x = randomizer(1, 5);
-		y = randomizer(1, 5);
-		if (jogo[x][y] == 0) {
-			jogo[x][y] = randomizer(1, 3);
-			i++;
-		}
-	} while (i <= 12);
-	printf("\nMatriz Inicial: \n");
-	*nextValue = next(jogo);
-}
-// Função que retorna uma allegro color
-ALLEGRO_COLOR color(char* color) {
-	if (color == "Black") {
-		return al_map_rgb(0, 0, 0);
-	}
-	else if (color == "Cream White") {
-		return al_map_rgb(245, 240, 227);
-	}
-	else if (color == "Light Blue") {
-		return al_map_rgb(64, 191, 193);
-	}
-	else if (color == "Red") {
-		return al_map_rgb(240, 19, 77);
-	}
-	else if (color == "Pink") {
-		return al_map_rgb(210, 80, 114);
-	}
-	else if (color == "Gray") {
-		return al_map_rgb(182, 178, 168);
-	}
-	else {
-		return al_map_rgb(255, 255, 255);
-	}
-}
-// Função que imprime no jogo o score
-void prints(int score) {
-	ALLEGRO_FONT* font = al_load_font("assets/ttf/Arcade_Alternate.ttf", 18, 0);
-
-	al_draw_filled_rectangle(84, 53, 273, 74, color("Light Blue"));
-	al_draw_textf(font, color("Cream White"), 183.0, 55.0, ALLEGRO_ALIGN_CENTRE,
-		"%d", score);
-	al_flip_display();
-	al_destroy_font(font);
-}
-// Função que imprime no jogo o tempo
-void printt(int* gameTime) {
-	(*gameTime)++;
-	ALLEGRO_FONT* font = al_load_font("assets/ttf/Arcade_Alternate.ttf", 18, 0);
-	int sec = *gameTime % 60;
-	int min = *gameTime / 60;
-	int hrs = *gameTime / 3600;
-
-	al_draw_filled_rectangle(84, 79, 273, 101, color("Light Blue"));
-	al_draw_textf(font, color("Cream White"), 183.0, 82, ALLEGRO_ALIGN_CENTRE,
-		"%02d:%02d:%02d", hrs, min, sec);
-	al_flip_display();
-	al_destroy_font(font);
-}
-// Função que imprime a matriz no jogo
 void allegro_printm(int jogo[][7], int nextValue) {
 	ALLEGRO_FONT* font = al_load_font("assets/ttf/Arcade_Alternate.ttf", 35, 0);
 	ALLEGRO_FONT* font2 = al_load_font("assets/ttf/Arcade_Alternate.ttf", 25, 0);
@@ -571,23 +485,54 @@ void allegro_printm(int jogo[][7], int nextValue) {
 
 	al_flip_display();
 }
+void prints(int score) {
+	ALLEGRO_FONT* font = al_load_font("assets/ttf/Arcade_Alternate.ttf", 18, 0);
 
-// Função que imprime o scoreboard em um arquivo
-/*void writeHighscore(int player[11], int score, ALLEGRO_DISPLAY* gameWindow) {
-	FILE* highscoreFile = fopen("Highscores.txt", "w+");
-	ALLEGRO_EVENT_QUEUE* writeQueue = al_create_event_queue();
-
-	al_register_event_source(writeQueue, al_get_mouse_event_source());
-	al_register_event_source(writeQueue, al_get_keyboard_event_source());
-	al_register_event_source(writeQueue, al_get_display_event_source(gameWindow));
-
-	fprintf(highscoreFile, "%s %d", player, score);
-
-	al_clear_to_color(al_map_rgb(255, 0, 0));
+	al_draw_filled_rectangle(84, 53, 273, 74, color("Light Blue"));
+	al_draw_textf(font, color("Cream White"), 183.0, 55.0, ALLEGRO_ALIGN_CENTRE,
+		"%d", score);
 	al_flip_display();
-}*/
+	al_destroy_font(font);
+}
+void printt(int* gameTime) {
+	(*gameTime)++;
+	ALLEGRO_FONT* font = al_load_font("assets/ttf/Arcade_Alternate.ttf", 18, 0);
+	int sec = *gameTime % 60;
+	int min = *gameTime / 60;
+	int hrs = *gameTime / 3600;
 
-// Função que seleciona o nome do jogador
+	al_draw_filled_rectangle(84, 79, 273, 101, color("Light Blue"));
+	al_draw_textf(font, color("Cream White"), 183.0, 82, ALLEGRO_ALIGN_CENTRE,
+		"%02d:%02d:%02d", hrs, min, sec);
+	al_flip_display();
+	al_destroy_font(font);
+}
+
+void newBoard(int jogo[][7], int* score, int* nextValue) {
+	int i, j, x, y;
+	for (i = 0; i < 6; ++i) {
+		for (j = 0; j < 6; j++) {
+			jogo[i][j] = 0;
+		}
+	}
+	for (i = 0; i < 7; ++i) {
+		jogo[0][i] = -1;
+		jogo[i][0] = -1;
+		jogo[6][i] = -1;
+		jogo[i][6] = -1;
+	}
+	jogo[randomizer(1, 5)][randomizer(1, 5)] = -1;
+	i = 1;
+	do {
+		x = randomizer(1, 5);
+		y = randomizer(1, 5);
+		if (jogo[x][y] == 0) {
+			jogo[x][y] = randomizer(1, 3);
+			i++;
+		}
+	} while (i <= 12);
+	*nextValue = next(jogo);
+}
 void nameSelect(char player[11]) {
 	int nameSelected = 0, i = 0;
 	ALLEGRO_BITMAP* nameScreen = al_load_bitmap("assets/bmp/nameScreen.bmp");
@@ -609,7 +554,6 @@ void nameSelect(char player[11]) {
 		if (nameEvent.type == ALLEGRO_EVENT_KEY_CHAR) {
 			switch (nameEvent.keyboard.keycode) {
 			case ALLEGRO_KEY_ENTER:
-				printf("allegro_key_enter\n");
 				if (i != 0) {
 					nameSelected = 1;
 					al_play_sample(sdOk, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
@@ -619,7 +563,6 @@ void nameSelect(char player[11]) {
 				}
 				break;
 			case ALLEGRO_KEY_BACKSPACE:
-				printf("allegro_key_backspace\n");
 				if (i != 0) {
 					al_play_sample(sdBackspace, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 					player[i - 1] = '\0';
@@ -634,15 +577,10 @@ void nameSelect(char player[11]) {
 					if ((nameEvent.keyboard.unichar >= 65 &&
 						nameEvent.keyboard.unichar <= 90) ||
 						(nameEvent.keyboard.unichar >= 97 &&
-							nameEvent.keyboard.unichar <= 122) ||
-							(nameEvent.keyboard.unichar == 32)) {
+						nameEvent.keyboard.unichar <= 122)) {
 						al_play_sample(sdChar, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
-						printf("  %c, %d  \n", nameEvent.keyboard.unichar,
-							nameEvent.keyboard.unichar);
 						player[i] = nameEvent.keyboard.unichar;
-						printf("got here?");
 						player[i + 1] = '\0';
-						printf("or maybe here huh?");
 						i++;
 					}
 					else {
@@ -668,8 +606,138 @@ void nameSelect(char player[11]) {
 	al_destroy_font(font);
 	al_rest(1.0);
 }
-// Função de Pause
-void pauseGame(int jogo[][7], int nextValue, ALLEGRO_FONT* nameFont, int* gameTime, int score, char player[11],	ALLEGRO_BITMAP* inGame, int* gameOption) {
+
+void createFile() {
+	FILE* fileHighscores = fopen("Pontuacoes.txt", "w");
+	int i;
+	sb scoreboard[10];
+
+	for (i = 0; i < 10; ++i) {
+		scoreboard[i].player[0] = '!';
+		scoreboard[i].player[1] = '\0';
+		scoreboard[i].score = 0;
+		fprintf(fileHighscores, "%s %d\n", scoreboard[i].player,
+			scoreboard[i].score);
+	}
+	fclose(fileHighscores);
+}
+int fileCheck() {
+	FILE* fileHighscores = fopen("Pontuacoes.txt", "r");
+	if (fileHighscores == NULL) {
+		createFile();
+	}
+
+	if (fileHighscores != NULL) {
+		fclose(fileHighscores);
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
+void gameoverScreen(int placed, sb scoreboard[10]) {
+	ALLEGRO_BITMAP* highscoresScreen =
+		al_load_bitmap("assets/bmp/highscoresMenu.bmp");
+	ALLEGRO_FONT* font = al_load_font("assets/ttf/Arcade_Alternate.ttf", 18, 0);
+	ALLEGRO_FONT* font2 = al_load_font("assets/ttf/Arcade_Alternate.ttf", 18, 0);
+	ALLEGRO_EVENT_QUEUE* gameoverQueue = al_create_event_queue();
+	float x = 70;
+	float y = 110;
+	int quit = 0;
+	al_draw_bitmap(highscoresScreen, 0, 0, 0);
+	for (int i = 0; i < 10; ++i, y = y + 30) {
+		if (i == placed) {
+			al_draw_textf(font, color("Red"), x, y, 0, "%02d - %s : %d", i + 1,
+				scoreboard[i].player, scoreboard[i].score);
+		}
+		else {
+			al_draw_textf(font, color("Black"), x, y, 0, "%02d - %s : %d", i + 1,
+				scoreboard[i].player, scoreboard[i].score);
+		}
+	}
+
+	al_flip_display();
+
+	al_register_event_source(gameoverQueue, al_get_mouse_event_source());
+	while (!quit) {
+		ALLEGRO_EVENT gameoverEvent;
+		al_wait_for_event(gameoverQueue, &gameoverEvent);
+
+		if (gameoverEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
+			if (gameoverEvent.mouse.x >= 258.0 && gameoverEvent.mouse.x <= 303.0) {
+				if (gameoverEvent.mouse.y >= 51.0 && gameoverEvent.mouse.y <= 93.0) {
+					quit = 1;
+				}
+			}
+		}
+	}
+}
+void scoreboardSorter(char player[11], int score) {
+	int i, j, quit = 0, placed = 11;
+	FILE* fileHighscores = fopen("Pontuacoes.txt", "r+");
+	sb scoreboard[10];
+	sb sbAux, sbAuxInit;
+
+	for (i = 0; i < 10; ++i) {
+		fscanf(fileHighscores, "%s %d\n", scoreboard[i].player,
+			&(scoreboard[i].score));
+	}
+
+	i = 0;
+	while (!quit) {
+		if (i > 9) {
+			quit = 1;
+		}
+		else if ((score >= scoreboard[i].score) && (quit == 0)) {
+			placed = i;
+			if (score > scoreboard[i].score) {
+				sbAuxInit = scoreboard[i + 1];
+				scoreboard[i + 1] = scoreboard[i];
+
+				for (j = i + 2; j < 10; j++) {
+					sbAux = scoreboard[j];
+					scoreboard[j] = sbAuxInit;
+					sbAuxInit = sbAux;
+				}
+				scoreboard[i].score = score;
+				strcpy(scoreboard[i].player, player);
+				quit = 1;
+			}
+			else if (score == scoreboard[i].score) {
+				sbAuxInit = scoreboard[i + 2];
+				scoreboard[i + 2] = scoreboard[i];
+
+				for (j = i + 3; j < 10; j++) {
+					sbAux = scoreboard[j];
+					scoreboard[j] = sbAuxInit;
+					sbAuxInit = sbAux;
+				}
+				scoreboard[i].score = score;
+				strcpy(scoreboard[i + 1].player, player);
+				quit = 1;
+			}
+		}
+		i++;
+	}
+
+	fclose(fileHighscores);
+	fileHighscores = fopen("Pontuacoes.txt", "w");
+
+	for (i = 0; i < 10; ++i) {
+		fprintf(fileHighscores, "%s %d\n", scoreboard[i].player, scoreboard[i].score);
+	}
+
+	fclose(fileHighscores);
+
+	gameoverScreen(placed, scoreboard);
+}
+void gameOver(char player[11], int score) {
+	fileCheck();
+	scoreboardSorter(player, score);
+}
+
+void pauseGame(int jogo[][7], int nextValue, ALLEGRO_FONT* nameFont, int* gameTime, int score, char player[11], ALLEGRO_BITMAP* inGame, int* gameOption) {
 	int resume = 0;
 	ALLEGRO_BITMAP* pauseScreen = al_load_bitmap("assets/bmp/pauseScreen.bmp");
 	al_convert_mask_to_alpha(pauseScreen, color("Gray"));
@@ -689,7 +757,6 @@ void pauseGame(int jogo[][7], int nextValue, ALLEGRO_FONT* nameFont, int* gameTi
 					al_draw_textf(nameFont, color("Pink"), 103, 428, 0, "%s", player);
 					printt(gameTime);
 					prints(score);
-					printm(jogo, score, nextValue);
 					allegro_printm(jogo, nextValue);
 					al_flip_display();
 				}
@@ -711,7 +778,6 @@ void pauseGame(int jogo[][7], int nextValue, ALLEGRO_FONT* nameFont, int* gameTi
 	al_destroy_bitmap(pauseScreen);
 	al_destroy_event_queue(pauseQueue);
 }
-// Função que começa um novo jogo
 void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 	int jogo[7][7], score = 0, nextValue, exitGame = 0, gameTime = 0,
 		timeStoppedAt, gameOption = 0, outOfMoves = 0;
@@ -738,7 +804,6 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 	printt(&gameTime);
 	prints(score);
 
-	printm(jogo, score, nextValue);
 	allegro_printm(jogo, nextValue);
 
 	ALLEGRO_EVENT_QUEUE* gameQueue = al_create_event_queue();
@@ -756,7 +821,6 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 			switch (gameEvent.keyboard.keycode) {
 			case ALLEGRO_KEY_UP:
 				pressedUp(jogo, &nextValue, &score, sdMove, sdCantMove);
-				printm(jogo, score, nextValue);
 				allegro_printm(jogo, nextValue);
 				prints(score);
 				if (!canContinue(jogo)) {
@@ -767,7 +831,6 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 				break;
 			case ALLEGRO_KEY_DOWN:
 				pressedDown(jogo, &nextValue, &score, sdMove, sdCantMove);
-				printm(jogo, score, nextValue);
 				allegro_printm(jogo, nextValue);
 				prints(score);
 				if (!canContinue(jogo)) {
@@ -778,7 +841,6 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 				break;
 			case ALLEGRO_KEY_LEFT:
 				pressedLeft(jogo, &nextValue, &score, sdMove, sdCantMove);
-				printm(jogo, score, nextValue);
 				allegro_printm(jogo, nextValue);
 				prints(score);
 				if (!canContinue(jogo)) {
@@ -789,7 +851,6 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 				break;
 			case ALLEGRO_KEY_RIGHT:
 				pressedRight(jogo, &nextValue, &score, sdMove, sdCantMove);
-				printm(jogo, score, nextValue);
 				allegro_printm(jogo, nextValue);
 				prints(score);
 				if (!canContinue(jogo)) {
@@ -807,7 +868,6 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 				if (gameEvent.mouse.dx > gameEvent.mouse.dy) {
 					if (gameEvent.mouse.dx > gameEvent.mouse.x) {
 						pressedRight(jogo, &nextValue, &score, sdMove, sdCantMove);
-						printm(jogo, score, nextValue);
 						allegro_printm(jogo, nextValue);
 						prints(score);
 						if (!canContinue(jogo)) {
@@ -818,7 +878,6 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 					}
 					else if (gameEvent.mouse.dx < gameEvent.mouse.x) {
 						pressedLeft(jogo, &nextValue, &score, sdMove, sdCantMove);
-						printm(jogo, score, nextValue);
 						allegro_printm(jogo, nextValue);
 						prints(score);
 						if (!canContinue(jogo)) {
@@ -831,7 +890,6 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 				else if (gameEvent.mouse.dy > gameEvent.mouse.dx) {
 					if (gameEvent.mouse.dy > gameEvent.mouse.y) {
 						pressedUp(jogo, &nextValue, &score, sdMove, sdCantMove);
-						printm(jogo, score, nextValue);
 						allegro_printm(jogo, nextValue);
 						prints(score);
 						if (!canContinue(jogo)) {
@@ -842,7 +900,6 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 					}
 					else if (gameEvent.mouse.dy < gameEvent.mouse.y) {
 						pressedDown(jogo, &nextValue, &score, sdMove, sdCantMove);
-						printm(jogo, score, nextValue);
 						allegro_printm(jogo, nextValue);
 						prints(score);
 						if (!canContinue(jogo)) {
@@ -877,6 +934,7 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 						break;
 					case 2:
 						exitGame = 1;
+						*isRestarting = 0;
 						break;
 					}
 				}
@@ -891,6 +949,7 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 			"Acabaram os movimentos!");
 		al_flip_display();
 		al_rest(5.0);
+		gameOver(player, score);
 	}
 
 	al_destroy_bitmap(inGame);
@@ -898,9 +957,69 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 	al_destroy_font(nameFont);
 	al_destroy_font(outOfMovesFont);
 	al_destroy_event_queue(gameQueue);
-	// highscores();
 }
-// Função principal do jogo
+
+void help(ALLEGRO_DISPLAY* gameWindow) {
+	int quit = 0;
+	ALLEGRO_BITMAP* helpScreen = al_load_bitmap("assets/bmp/helpScreen.bmp");
+	ALLEGRO_EVENT_QUEUE* helpQueue = al_create_event_queue();
+	al_draw_bitmap(helpScreen, 0, 0, 0);
+	al_flip_display();
+
+	al_register_event_source(helpQueue, al_get_mouse_event_source());
+
+	while (!quit) {
+		ALLEGRO_EVENT helpEvent;
+		al_wait_for_event(helpQueue, &helpEvent);
+
+		if (helpEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
+			if (helpEvent.mouse.x >= 258.0 && helpEvent.mouse.x <= 303.0) {
+				if (helpEvent.mouse.y >= 51.0 && helpEvent.mouse.y <= 93.0) {
+					quit = 1;
+				}
+			}
+		}
+	}
+}
+void hsMenu(ALLEGRO_DISPLAY* gameWindow) {
+	int quit = 0;
+	float x = 70, y = 110;
+	fileCheck();
+	FILE* fileHighscores = fopen("Pontuacoes.txt", "r+");
+	ALLEGRO_FONT* font = al_load_font("assets/ttf/Arcade_Alternate.ttf", 18, 0);
+	ALLEGRO_EVENT_QUEUE* hsEventQueue = al_create_event_queue();
+	ALLEGRO_BITMAP* hsScreen = al_load_bitmap("assets/bmp/highscoresMenu.bmp");
+	sb scoreboard[10];
+
+	al_draw_bitmap(hsScreen, 0, 0, 0);
+	for (int i = 0; i < 10; ++i, y = y + 30) {
+		fscanf(fileHighscores, "%s %d\n", scoreboard[i].player,
+			&(scoreboard[i].score));
+		al_draw_textf(font, color("Black"), x, y, 0, "%02d - %s : %d", i + 1,
+			scoreboard[i].player, scoreboard[i].score);
+	}
+
+	al_flip_display();
+	fclose(fileHighscores);
+
+	ALLEGRO_EVENT_QUEUE* hsQueue = al_create_event_queue();
+
+	al_register_event_source(hsEventQueue, al_get_mouse_event_source());
+
+	while (!quit) {
+		ALLEGRO_EVENT hsEvent;
+		al_wait_for_event(hsEventQueue, &hsEvent);
+
+		if (hsEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
+			if (hsEvent.mouse.x >= 258.0 && hsEvent.mouse.x <= 303.0) {
+				if (hsEvent.mouse.y >= 51.0 && hsEvent.mouse.y <= 93.0) {
+					quit = 1;
+				}
+			}
+		}
+	}
+}
+
 void allegro_main() {
 	int exit = 0, isRestarting = 0;
 	ALLEGRO_DISPLAY* gameWindow = al_create_display(350, 450);
@@ -931,27 +1050,48 @@ void allegro_main() {
 		ALLEGRO_EVENT mainEvent;
 		al_wait_for_event(mainQueue, &mainEvent);
 
-		if (mainEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP || isRestarting) {
-			if ((mainEvent.mouse.x >= 44.0 && mainEvent.mouse.x <= 282) ||
-				isRestarting) {
-				if ((mainEvent.mouse.y >= 118 && mainEvent.mouse.y <= 231) ||
-					isRestarting) {
-					if (isRestarting == 0)
-						al_play_sample(sdNewGame, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
-					al_pause_event_queue(mainQueue, 1);
-					isRestarting = 0;
-					newGame(gameWindow, &isRestarting);
-					if (isRestarting == 0) {
-						al_draw_bitmap(mainMenu, 0, 0, 0);
-						al_flip_display();
-					}
-					al_pause_event_queue(mainQueue, 0);
+		if (isRestarting) {
+			al_pause_event_queue(mainQueue, 1);
+			newGame(gameWindow, &isRestarting);
+			if (isRestarting == 0) {
+				al_draw_bitmap(mainMenu, 0, 0, 0);
+				al_flip_display();
+			}
+			al_pause_event_queue(mainQueue, 0);
+		}
+
+		if (mainEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
+			if ((mainEvent.mouse.x >= 44.0 && mainEvent.mouse.x <= 282) &&
+				(mainEvent.mouse.y >= 118 && mainEvent.mouse.y <= 231)) {
+				al_play_sample(sdNewGame, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+				al_pause_event_queue(mainQueue, 1);
+				isRestarting = 0;
+				newGame(gameWindow, &isRestarting);
+				if (isRestarting == 0) {
+					al_draw_bitmap(mainMenu, 0, 0, 0);
+					al_flip_display();
 				}
+				al_pause_event_queue(mainQueue, 0);
+			}
+			else if ((mainEvent.mouse.x >= 169.0 && mainEvent.mouse.x <= 281.0) &&
+				(mainEvent.mouse.y >= 254.0 && mainEvent.mouse.y <= 366.0)) {
+				al_pause_event_queue(mainQueue, 1);
+				help(gameWindow);
+				al_draw_bitmap(mainMenu, 0, 0, 0);
+				al_flip_display();
+				al_pause_event_queue(mainQueue, 0);
+			}
+			else if ((mainEvent.mouse.x >= 44.0 && mainEvent.mouse.x <= 157.0) &&
+				(mainEvent.mouse.y >= 254.0 && mainEvent.mouse.y <= 366.0)) {
+				al_pause_event_queue(mainQueue, 1);
+				hsMenu(gameWindow);
+				al_draw_bitmap(mainMenu, 0, 0, 0);
+				al_flip_display();
+				al_pause_event_queue(mainQueue, 0);
 			}
 		}
 	}
 }
-// Função principal
 void main() {
 	init();
 	allegro_main();
