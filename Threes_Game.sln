@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.29424.173
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Threes_Game", "Threes_Game.vcxproj", "{32E8A293-7562-42B3-BBE3-262BC5A3824B}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Threes", "..\Threes\Threes.vdproj", "{585BFC81-4D63-4A62-82C5-F041A7D10FB5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,10 @@ Global
 		{32E8A293-7562-42B3-BBE3-262BC5A3824B}.Release|x64.Build.0 = Release|x64
 		{32E8A293-7562-42B3-BBE3-262BC5A3824B}.Release|x86.ActiveCfg = Release|Win32
 		{32E8A293-7562-42B3-BBE3-262BC5A3824B}.Release|x86.Build.0 = Release|Win32
+		{585BFC81-4D63-4A62-82C5-F041A7D10FB5}.Debug|x64.ActiveCfg = Debug
+		{585BFC81-4D63-4A62-82C5-F041A7D10FB5}.Debug|x86.ActiveCfg = Debug
+		{585BFC81-4D63-4A62-82C5-F041A7D10FB5}.Release|x64.ActiveCfg = Release
+		{585BFC81-4D63-4A62-82C5-F041A7D10FB5}.Release|x86.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
