@@ -586,7 +586,7 @@ void nameSelect(char player[11]) {
 					if ((nameEvent.keyboard.unichar >= 65 &&
 						nameEvent.keyboard.unichar <= 90) ||
 						(nameEvent.keyboard.unichar >= 97 &&
-						nameEvent.keyboard.unichar <= 122)) {
+							nameEvent.keyboard.unichar <= 122)) {
 						al_play_sample(sdChar, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 						player[i] = nameEvent.keyboard.unichar;
 						player[i + 1] = '\0';
@@ -666,7 +666,7 @@ void gameoverScreen(int placed, sb scoreboard[10]) {
 
 	al_register_event_source(gameoverQueue, al_get_mouse_event_source());
 	al_register_event_source(gameoverQueue, al_get_display_event_source(al_get_current_display()));
-	
+
 	while (!quit) {
 		ALLEGRO_EVENT gameoverEvent;
 		al_wait_for_event(gameoverQueue, &gameoverEvent);
@@ -882,6 +882,7 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 			y = gameEvent.mouse.y;
 		}
 
+		/* Código que impedia o botão pause de ser pressionado
 		if (gameEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
 			int deltax = gameEvent.mouse.x - x;
 			int deltay = gameEvent.mouse.y - y;
@@ -930,6 +931,30 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 				}
 			}
 		}
+		*/
+		if (gameEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
+			if (gameEvent.mouse.x >= 277 && gameEvent.mouse.x <= 302.7) {
+				if (gameEvent.mouse.y >= 78.3 && gameEvent.mouse.y <= 102) {
+					al_stop_timer(gameTimer);
+					al_play_sample(sdPauseIn, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+					pauseGame(jogo, nextValue, nameFont, &gameTime, score, player, inGame,
+						&gameOption);
+					al_play_sample(sdPauseOut, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
+					switch (gameOption) {
+					case 0:
+						al_start_timer(gameTimer);
+						break;
+					case 1:
+						exitGame = 1;
+						*isRestarting = 1;
+						break;
+					case 2:
+						exitGame = 1;
+						break;
+					}
+				}
+			}
+		}
 
 		if (gameEvent.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
 			exit(1);
@@ -966,7 +991,7 @@ void help(ALLEGRO_DISPLAY* gameWindow) {
 
 	al_register_event_source(helpQueue, al_get_mouse_event_source());
 	al_register_event_source(helpQueue, al_get_display_event_source(al_get_current_display()));
-	
+
 	while (!quit) {
 		ALLEGRO_EVENT helpEvent;
 		al_wait_for_event(helpQueue, &helpEvent);
@@ -1006,7 +1031,7 @@ void hsMenu(ALLEGRO_DISPLAY* gameWindow) {
 
 	al_register_event_source(hsEventQueue, al_get_mouse_event_source());
 	al_register_event_source(hsEventQueue, al_get_display_event_source(al_get_current_display()));
-	
+
 	while (!quit) {
 		ALLEGRO_EVENT hsEvent;
 		al_wait_for_event(hsEventQueue, &hsEvent);
