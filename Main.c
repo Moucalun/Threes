@@ -31,6 +31,9 @@ void init() {
 	al_install_keyboard();
 	al_install_audio();
 }
+void exitGame() {
+	exit(1);
+}
 
 ALLEGRO_COLOR color(char* color) {
 	if (color == "Black") {
@@ -542,7 +545,9 @@ void nameSelect(char player[11]) {
 	ALLEGRO_SAMPLE* sdBackspace = al_load_sample("assets/ogg/soundBackspace.ogg");
 	ALLEGRO_SAMPLE* sdError = al_load_sample("assets/ogg/soundError.ogg");
 	ALLEGRO_SAMPLE* sdOk = al_load_sample("assets/ogg/soundNewGame.ogg");
+
 	al_register_event_source(nameQueue, al_get_keyboard_event_source());
+	al_register_event_source(nameQueue, al_get_display_event_source(al_get_current_display()));
 
 	al_draw_bitmap(nameScreen, 0, 0, 0);
 	al_flip_display();
@@ -550,6 +555,10 @@ void nameSelect(char player[11]) {
 	while (!nameSelected) {
 		ALLEGRO_EVENT nameEvent;
 		al_wait_for_event(nameQueue, &nameEvent);
+
+		if (nameEvent.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+			exitGame();
+		}
 
 		if (nameEvent.type == ALLEGRO_EVENT_KEY_CHAR) {
 			switch (nameEvent.keyboard.keycode) {
@@ -594,9 +603,7 @@ void nameSelect(char player[11]) {
 			}
 
 			al_draw_filled_rectangle(60, 155, 278, 251, color("Red"));
-			169;
-			al_draw_textf(font, color("Cream White"), 169.0, 203.0,
-				ALLEGRO_ALIGN_CENTRE, "%s", player);
+			al_draw_textf(font, color("Cream White"), 169.0, 203.0, ALLEGRO_ALIGN_CENTRE, "%s", player);
 			al_flip_display();
 		}
 	}
@@ -637,29 +644,29 @@ int fileCheck() {
 }
 
 void gameoverScreen(int placed, sb scoreboard[10]) {
-	ALLEGRO_BITMAP* highscoresScreen =
-		al_load_bitmap("assets/bmp/highscoresMenu.bmp");
+	ALLEGRO_BITMAP* highscoresScreen = al_load_bitmap("assets/bmp/highscoresMenu.bmp");
 	ALLEGRO_FONT* font = al_load_font("assets/ttf/Arcade_Alternate.ttf", 18, 0);
 	ALLEGRO_FONT* font2 = al_load_font("assets/ttf/Arcade_Alternate.ttf", 18, 0);
 	ALLEGRO_EVENT_QUEUE* gameoverQueue = al_create_event_queue();
 	float x = 70;
 	float y = 110;
 	int quit = 0;
+
 	al_draw_bitmap(highscoresScreen, 0, 0, 0);
 	for (int i = 0; i < 10; ++i, y = y + 30) {
 		if (i == placed) {
-			al_draw_textf(font, color("Red"), x, y, 0, "%02d - %s : %d", i + 1,
-				scoreboard[i].player, scoreboard[i].score);
+			al_draw_textf(font, color("Red"), x, y, 0, "%02d - %s : %d", i + 1, scoreboard[i].player, scoreboard[i].score);
 		}
 		else {
-			al_draw_textf(font, color("Black"), x, y, 0, "%02d - %s : %d", i + 1,
-				scoreboard[i].player, scoreboard[i].score);
+			al_draw_textf(font, color("Black"), x, y, 0, "%02d - %s : %d", i + 1, scoreboard[i].player, scoreboard[i].score);
 		}
 	}
 
 	al_flip_display();
 
 	al_register_event_source(gameoverQueue, al_get_mouse_event_source());
+	al_register_event_source(gameoverQueue, al_get_display_event_source(al_get_current_display()));
+	
 	while (!quit) {
 		ALLEGRO_EVENT gameoverEvent;
 		al_wait_for_event(gameoverQueue, &gameoverEvent);
@@ -670,6 +677,9 @@ void gameoverScreen(int placed, sb scoreboard[10]) {
 					quit = 1;
 				}
 			}
+		}
+		if (gameoverEvent.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+			exitGame();
 		}
 	}
 }
@@ -744,12 +754,19 @@ void pauseGame(int jogo[][7], int nextValue, ALLEGRO_FONT* nameFont, int* gameTi
 	ALLEGRO_EVENT_QUEUE* pauseQueue = al_create_event_queue();
 	al_register_event_source(pauseQueue, al_get_keyboard_event_source());
 	al_register_event_source(pauseQueue, al_get_mouse_event_source());
+	al_register_event_source(pauseQueue, al_get_display_event_source(al_get_current_display()));
+
 	al_draw_bitmap(pauseScreen, 0, 0, 0);
 	al_flip_display();
 	while (!resume) {
 		ALLEGRO_EVENT pauseEvent;
 		al_wait_for_event(pauseQueue, &pauseEvent);
 		if (pauseEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
+
+			if (pauseEvent.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+				exitGame();
+			}
+
 			if (pauseEvent.mouse.x >= 129 && pauseEvent.mouse.x <= 198) {
 				if (pauseEvent.mouse.y >= 204 && pauseEvent.mouse.y <= 273) {
 					resume = 1;
@@ -779,14 +796,12 @@ void pauseGame(int jogo[][7], int nextValue, ALLEGRO_FONT* nameFont, int* gameTi
 	al_destroy_event_queue(pauseQueue);
 }
 void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
-	int jogo[7][7], score = 0, nextValue, exitGame = 0, gameTime = 0,
-		timeStoppedAt, gameOption = 0, outOfMoves = 0;
+	int jogo[7][7], score = 0, nextValue, exitGame = 0, gameTime = 0, timeStoppedAt, gameOption = 0, outOfMoves = 0;
 	char player[11];
 	ALLEGRO_BITMAP* inGame = al_load_bitmap("assets/bmp/inGame.bmp");
 	ALLEGRO_TIMER* gameTimer = al_create_timer(1.0);
 	ALLEGRO_FONT* nameFont = al_load_font("assets/ttf/Arcade_Classic.ttf", 18, 0);
-	ALLEGRO_FONT* outOfMovesFont =
-		al_load_font("assets/ttf/Arcade_Classic.ttf", 20, 0);
+	ALLEGRO_FONT* outOfMovesFont = al_load_font("assets/ttf/Arcade_Classic.ttf", 20, 0);
 	ALLEGRO_SAMPLE* sdHovering = al_load_sample("assets/ogg/soundHovering.ogg");
 	ALLEGRO_SAMPLE* sdPauseIn = al_load_sample("assets/ogg/soundPauseIn.ogg");
 	ALLEGRO_SAMPLE* sdPauseOut = al_load_sample("assets/ogg/soundPauseOut.ogg");
@@ -812,7 +827,7 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 	al_register_event_source(gameQueue, al_get_mouse_event_source());
 	al_register_event_source(gameQueue, al_get_timer_event_source(gameTimer));
 	al_start_timer(gameTimer);
-
+	int x = 0, y = 0;
 	while (!exitGame) {
 		ALLEGRO_EVENT gameEvent;
 		al_wait_for_event(gameQueue, &gameEvent);
@@ -862,91 +877,74 @@ void newGame(ALLEGRO_DISPLAY* gameWindow, int* isRestarting) {
 			}
 		}
 
-		if (gameEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_DOWN) {
-			al_wait_for_event(gameQueue, &gameEvent);
-			if (gameEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
-				if (gameEvent.mouse.dx > gameEvent.mouse.dy) {
-					if (gameEvent.mouse.dx > gameEvent.mouse.x) {
-						pressedRight(jogo, &nextValue, &score, sdMove, sdCantMove);
-						allegro_printm(jogo, nextValue);
-						prints(score);
-						if (!canContinue(jogo)) {
-							exitGame = 1;
-							timeStoppedAt = gameTime;
-							outOfMoves = 1;
-						}
-					}
-					else if (gameEvent.mouse.dx < gameEvent.mouse.x) {
-						pressedLeft(jogo, &nextValue, &score, sdMove, sdCantMove);
-						allegro_printm(jogo, nextValue);
-						prints(score);
-						if (!canContinue(jogo)) {
-							exitGame = 1;
-							timeStoppedAt = gameTime;
-							outOfMoves = 1;
-						}
+		if (gameEvent.type == ALLEGRO_EVENT_MOUSE_AXES) {
+			x = gameEvent.mouse.x;
+			y = gameEvent.mouse.y;
+		}
+
+		if (gameEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
+			int deltax = gameEvent.mouse.x - x;
+			int deltay = gameEvent.mouse.y - y;
+			if (deltax >= deltay){
+				if (gameEvent.mouse.x >= x) {
+					pressedRight(jogo, &nextValue, &score, sdMove, sdCantMove);
+					allegro_printm(jogo, nextValue);
+					prints(score);
+					if (!canContinue(jogo)) {
+						exitGame = 1;
+						timeStoppedAt = gameTime;
+						outOfMoves = 1;
 					}
 				}
-				else if (gameEvent.mouse.dy > gameEvent.mouse.dx) {
-					if (gameEvent.mouse.dy > gameEvent.mouse.y) {
-						pressedUp(jogo, &nextValue, &score, sdMove, sdCantMove);
-						allegro_printm(jogo, nextValue);
-						prints(score);
-						if (!canContinue(jogo)) {
-							exitGame = 1;
-							timeStoppedAt = gameTime;
-							outOfMoves = 1;
-						}
-					}
-					else if (gameEvent.mouse.dy < gameEvent.mouse.y) {
-						pressedDown(jogo, &nextValue, &score, sdMove, sdCantMove);
-						allegro_printm(jogo, nextValue);
-						prints(score);
-						if (!canContinue(jogo)) {
-							exitGame = 1;
-							timeStoppedAt = gameTime;
-							outOfMoves = 1;
-						}
+				if (gameEvent.mouse.x < x) {
+					pressedLeft(jogo, &nextValue, &score, sdMove, sdCantMove);
+					allegro_printm(jogo, nextValue);
+					prints(score);
+					if (!canContinue(jogo)) {
+						exitGame = 1;
+						timeStoppedAt = gameTime;
+						outOfMoves = 1;
 					}
 				}
 			}
+			if(deltay > deltax) {
+				if (gameEvent.mouse.y >= y) {
+					pressedDown(jogo, &nextValue, &score, sdMove, sdCantMove);
+					allegro_printm(jogo, nextValue);
+					prints(score);
+					if (!canContinue(jogo)) {
+						exitGame = 1;
+						timeStoppedAt = gameTime;
+						outOfMoves = 1;
+					}
+				}
+				if (gameEvent.mouse.y < y) {
+					pressedUp(jogo, &nextValue, &score, sdMove, sdCantMove);
+					allegro_printm(jogo, nextValue);
+					prints(score);
+					if (!canContinue(jogo)) {
+						exitGame = 1;
+						timeStoppedAt = gameTime;
+						outOfMoves = 1;
+					}
+				}
+			}
+		}
+
+		if (gameEvent.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+			exit(1);
 		}
 
 		if (gameEvent.type == ALLEGRO_EVENT_TIMER) {
 			printt(&gameTime);
 		}
 
-		if (gameEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
-			if (gameEvent.mouse.x >= 277 && gameEvent.mouse.x <= 302.7) {
-				if (gameEvent.mouse.y >= 78.3 && gameEvent.mouse.y <= 102) {
-					al_stop_timer(gameTimer);
-					al_play_sample(sdPauseIn, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
-					pauseGame(jogo, nextValue, nameFont, &gameTime, score, player, inGame,
-						&gameOption);
-					al_play_sample(sdPauseOut, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
-					switch (gameOption) {
-					case 0:
-						al_start_timer(gameTimer);
-						break;
-					case 1:
-						exitGame = 1;
-						*isRestarting = 1;
-						break;
-					case 2:
-						exitGame = 1;
-						*isRestarting = 0;
-						break;
-					}
-				}
-			}
-		}
 	}
 
 	if (exitGame && outOfMoves) {
 		al_rest(1.0);
 		al_play_sample(sdGameOver, 3, 0, 0.5, ALLEGRO_PLAYMODE_ONCE, NULL);
-		al_draw_text(outOfMovesFont, color("Red"), 162, 390, ALLEGRO_ALIGN_CENTRE,
-			"Acabaram os movimentos!");
+		al_draw_text(outOfMovesFont, color("Red"), 162, 390, ALLEGRO_ALIGN_CENTRE, "Acabaram os movimentos!");
 		al_flip_display();
 		al_rest(5.0);
 		gameOver(player, score);
@@ -967,7 +965,8 @@ void help(ALLEGRO_DISPLAY* gameWindow) {
 	al_flip_display();
 
 	al_register_event_source(helpQueue, al_get_mouse_event_source());
-
+	al_register_event_source(helpQueue, al_get_display_event_source(al_get_current_display()));
+	
 	while (!quit) {
 		ALLEGRO_EVENT helpEvent;
 		al_wait_for_event(helpQueue, &helpEvent);
@@ -978,6 +977,9 @@ void help(ALLEGRO_DISPLAY* gameWindow) {
 					quit = 1;
 				}
 			}
+		}
+		if (helpEvent.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+			exitGame();
 		}
 	}
 }
@@ -993,10 +995,8 @@ void hsMenu(ALLEGRO_DISPLAY* gameWindow) {
 
 	al_draw_bitmap(hsScreen, 0, 0, 0);
 	for (int i = 0; i < 10; ++i, y = y + 30) {
-		fscanf(fileHighscores, "%s %d\n", scoreboard[i].player,
-			&(scoreboard[i].score));
-		al_draw_textf(font, color("Black"), x, y, 0, "%02d - %s : %d", i + 1,
-			scoreboard[i].player, scoreboard[i].score);
+		fscanf(fileHighscores, "%s %d\n", scoreboard[i].player, &(scoreboard[i].score));
+		al_draw_textf(font, color("Black"), x, y, 0, "%02d - %s : %d", i + 1, scoreboard[i].player, scoreboard[i].score);
 	}
 
 	al_flip_display();
@@ -1005,7 +1005,8 @@ void hsMenu(ALLEGRO_DISPLAY* gameWindow) {
 	ALLEGRO_EVENT_QUEUE* hsQueue = al_create_event_queue();
 
 	al_register_event_source(hsEventQueue, al_get_mouse_event_source());
-
+	al_register_event_source(hsEventQueue, al_get_display_event_source(al_get_current_display()));
+	
 	while (!quit) {
 		ALLEGRO_EVENT hsEvent;
 		al_wait_for_event(hsEventQueue, &hsEvent);
@@ -1015,18 +1016,21 @@ void hsMenu(ALLEGRO_DISPLAY* gameWindow) {
 				if (hsEvent.mouse.y >= 51.0 && hsEvent.mouse.y <= 93.0) {
 					quit = 1;
 				}
+
 			}
+		}
+		if (hsEvent.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+			exitGame();
 		}
 	}
 }
 
 void allegro_main() {
-	int exit = 0, isRestarting = 0;
+	int quit = 0, isRestarting = 0;
 	ALLEGRO_DISPLAY* gameWindow = al_create_display(350, 450);
 	ALLEGRO_BITMAP* gameIcon = al_load_bitmap("assets/bmp/gameIcon.bmp");
 	ALLEGRO_BITMAP* mainMenu = al_load_bitmap("assets/bmp/mainMenu.bmp");
-	ALLEGRO_AUDIO_STREAM* bgMusic =
-		al_load_audio_stream("assets/ogg/bgMusic.ogg", 4, 1024);
+	ALLEGRO_AUDIO_STREAM* bgMusic = al_load_audio_stream("assets/ogg/bgMusic.ogg", 4, 1024);
 	ALLEGRO_SAMPLE* sdHovering = al_load_sample("assets/ogg/soundHovering.ogg");
 	ALLEGRO_SAMPLE* sdNewGame = al_load_sample("assets/ogg/soundNewGame.ogg");
 	ALLEGRO_SAMPLE* sdSelect = al_load_sample("assets/ogg/soundSelect.ogg");
@@ -1046,7 +1050,7 @@ void allegro_main() {
 	al_register_event_source(mainQueue, al_get_keyboard_event_source());
 	al_register_event_source(mainQueue, al_get_mouse_event_source());
 
-	while (!exit) {
+	while (!quit) {
 		ALLEGRO_EVENT mainEvent;
 		al_wait_for_event(mainQueue, &mainEvent);
 
@@ -1058,6 +1062,11 @@ void allegro_main() {
 				al_flip_display();
 			}
 			al_pause_event_queue(mainQueue, 0);
+		}
+
+		if (mainEvent.type == ALLEGRO_EVENT_DISPLAY_CLOSE) {
+			exitGame();
+			quit = 1;
 		}
 
 		if (mainEvent.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP) {
@@ -1075,16 +1084,20 @@ void allegro_main() {
 			}
 			else if ((mainEvent.mouse.x >= 169.0 && mainEvent.mouse.x <= 281.0) &&
 				(mainEvent.mouse.y >= 254.0 && mainEvent.mouse.y <= 366.0)) {
+				al_play_sample(sdHovering, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 				al_pause_event_queue(mainQueue, 1);
 				help(gameWindow);
+				al_play_sample(sdHovering, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 				al_draw_bitmap(mainMenu, 0, 0, 0);
 				al_flip_display();
 				al_pause_event_queue(mainQueue, 0);
 			}
 			else if ((mainEvent.mouse.x >= 44.0 && mainEvent.mouse.x <= 157.0) &&
 				(mainEvent.mouse.y >= 254.0 && mainEvent.mouse.y <= 366.0)) {
+				al_play_sample(sdHovering, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 				al_pause_event_queue(mainQueue, 1);
 				hsMenu(gameWindow);
+				al_play_sample(sdHovering, 1, 0, 1, ALLEGRO_PLAYMODE_ONCE, NULL);
 				al_draw_bitmap(mainMenu, 0, 0, 0);
 				al_flip_display();
 				al_pause_event_queue(mainQueue, 0);
